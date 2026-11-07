@@ -479,7 +479,6 @@
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = mode === 'ai' ? 'BOT' : p2Config.name.substring(0, 4);
@@ -520,26 +519,13 @@
       document.getElementById('gameover-overlay').classList.remove('opacity-0', 'pointer-events-none');
     }
 
-    // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
-    let koActive = false, koX = 0, koY = 0, koStart = 0;
-    function startKO(x, y) {
-      koActive = true; koX = x; koY = y; koStart = performance.now();
-      for (let i = 0; i < 40; i++) {
-        const a = Math.random() * Math.PI * 2, s = Math.random() * 320 + 60;
-        particles.push(new Particle(x, y, Math.cos(a) * s, Math.sin(a) * s, i % 2 ? '#fef08a' : '#ef4444', 0.6 + Math.random() * 0.4));
-      }
-      screenShakeTime = 0.3; screenShakeForce = 4;
-      AudioEngine.tone('sawtooth', 120, 25, 0.5, 0.3);
-    }
-
-    function triggerVictory(winnerName, loser) {
-      timeScale = 0.2;
-      if (loser) startKO(loser.x, loser.y);
+    function triggerVictory(winnerName) {
+      timeScale = 0.25;
       setTimeout(() => {
         isRunning = false;
         if (gameMode === 'online-host') netSend({ t: 'over', w: winnerName });
         showGameOver(winnerName.toUpperCase() + ' WINS!');
-      }, 1800);
+      }, 1000);
     }
 
     function updateHUD() {
@@ -680,7 +666,7 @@
       const g = p => [Math.round(p.x), Math.round(p.y), Math.round(p.vx), Math.round(p.vy), +p.angle.toFixed(3), +p.spinSpeed.toFixed(2),
                       Math.round(p.hp), p.ammo, p.reloading ? 1 : 0, +p.reloadTimer.toFixed(2), p.alive ? 1 : 0];
       return {
-        t: 's', ts: timeScale, p1: g(player1), p2: g(player2),
+        t: 's', p1: g(player1), p2: g(player2),
         b: bullets.filter(b => b.active).map(b => [b.id || (b.id = ++bulletIdSeq), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.isPlayer1 ? 1 : 0, b.config.name.toLowerCase()]),
         c: arenaPickups.filter(c => c.active).map(c => [Math.round(c.x), Math.round(c.y), c.type])
       };
@@ -689,10 +675,8 @@
     // Guest: apply host state, and trigger sounds/FX by comparing with previous state
     function applySnapshot(s) {
       if (!player1 || !player2) return;
-      timeScale = s.ts || 1;
       [[player1, s.p1], [player2, s.p2]].forEach(([p, a]) => {
         const [x, y, vx, vy, ang, sp, hp, ammo, rl, rt, al] = a;
-        if (p.alive && !al) startKO(x, y);
         if (ammo < p.ammo) {
           AudioEngine.playShoot(p.config.name.toLowerCase());
           screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
@@ -795,7 +779,7 @@
             updateHUD();
             if (target.hp <= 0 && target.alive) {
               target.alive = false;
-              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
+              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'));
             }
           }
         });
@@ -817,11 +801,6 @@
         ctx.translate((Math.random() - 0.5) * screenShakeForce * 8, (Math.random() - 0.5) * screenShakeForce * 8);
       }
 
-      if (koActive) { // zoom in on the knocked-out gun
-        const z = 1 + 0.6 * Math.min(1, (performance.now() - koStart) / 500);
-        ctx.translate(koX, koY); ctx.scale(z, z); ctx.translate(-koX, -koY);
-      }
-
       ctx.strokeStyle = 'rgba(51,65,85,0.2)'; ctx.lineWidth = 1;
       for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
       for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
@@ -838,17 +817,6 @@
       combatTexts.forEach(t => t.draw());
 
       ctx.restore();
-
-      if (koActive) { // white flash + K.O. text
-        const t = (performance.now() - koStart) / 1000;
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, 0.5 - t * 1.5); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-        ctx.globalAlpha = Math.min(1, t * 4);
-        ctx.font = '900 72px Orbitron'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.lineWidth = 6; ctx.strokeStyle = '#020617'; ctx.strokeText('K.O.', W / 2, H / 2);
-        ctx.fillStyle = '#ef4444'; ctx.fillText('K.O.', W / 2, H / 2);
-        ctx.restore();
-      }
 
       if (isRunning) requestAnimationFrame(gameLoop);
     }
