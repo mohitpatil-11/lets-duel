@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,46 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pistol Duel: Mobile Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;600;700;900&display=swap');
-    
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      background-color: #020617;
-    }
-    
-    body { 
-      font-family: 'Inter', sans-serif; 
-    }
-    
-    .font-orbitron { font-family: 'Orbitron', sans-serif; }
-
-    .glow-title {
-      text-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 35px rgba(239, 68, 68, 0.4);
-    }
-
-    .pulse-btn {
-      animation: pulseGlow 1.8s infinite alternate;
-    }
-
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
-      100% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
-    }
+    html, body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; background-color:#020617; }
+    body { font-family:'Inter',sans-serif; }
+    .font-orbitron { font-family:'Orbitron',sans-serif; }
+    .glow-title { text-shadow:0 0 20px rgba(245,158,11,.6),0 0 35px rgba(239,68,68,.4); }
+    .pulse-btn { animation:pulseGlow 1.8s infinite alternate; }
+    @keyframes pulseGlow { 0%{box-shadow:0 0 12px rgba(245,158,11,.4);} 100%{box-shadow:0 0 25px rgba(245,158,11,.8);} }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 flex flex-col items-center justify-between p-2 select-none h-full w-full">
 
-  <!-- Mobile-Optimized Top HUD -->
+  <!-- Top HUD -->
   <div class="w-full max-w-md flex items-center justify-between px-3 py-2 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-lg z-10 text-xs shrink-0 mt-1">
-    <!-- Player 1 HP Status -->
     <div class="flex items-center gap-2 w-[44%]">
       <div class="font-orbitron font-black text-amber-400 text-sm">P1</div>
       <div class="flex-1 flex flex-col gap-1">
@@ -58,13 +32,7 @@
         </div>
       </div>
     </div>
-
-    <!-- Mute / Sound Toggle -->
-    <button id="sound-toggle" onclick="toggleSound()" class="px-2 py-1 text-xs font-orbitron text-slate-300 hover:text-white active:scale-95 transition-transform bg-slate-800 border border-slate-700 rounded-xl">
-      🔊
-    </button>
-
-    <!-- Player 2 HP Status -->
+    <button id="sound-toggle" onclick="toggleSound()" class="px-2 py-1 text-xs font-orbitron text-slate-300 hover:text-white active:scale-95 transition-transform bg-slate-800 border border-slate-700 rounded-xl">🔊</button>
     <div class="flex items-center justify-end gap-2 w-[44%]">
       <div class="flex-1 flex flex-col gap-1 text-right">
         <div class="h-3.5 bg-slate-800 rounded-full border border-slate-700 overflow-hidden relative shadow-inner">
@@ -79,47 +47,31 @@
     </div>
   </div>
 
-  <!-- Mobile Screen Canvas Wrapper -->
+  <!-- Canvas wrapper -->
   <div class="relative w-full max-w-md flex-1 my-2 bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl flex items-center justify-center">
-    
-    <!-- Game Canvas -->
     <canvas id="gameCanvas" width="450" height="700" class="w-full h-full block cursor-pointer touch-none object-contain"></canvas>
 
-    <!-- Main Menu Overlay -->
+    <!-- Main Menu -->
     <div id="menu-overlay" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 z-20 transition-opacity duration-300 overflow-y-auto">
       <div class="flex flex-col items-center text-center mt-2">
-        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">
-          PISTOL DUEL
-        </h1>
+        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">PISTOL DUEL</h1>
         <p class="font-orbitron text-[10px] text-amber-400/90 tracking-widest uppercase font-semibold mt-1">Mobile Physics Arena</p>
       </div>
 
-      <!-- Weapon Selector -->
       <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-inner">
         <div class="text-[11px] font-orbitron text-amber-400 font-bold mb-2 flex justify-between items-center px-1">
           <span>SELECT WEAPON:</span>
           <span id="weapon-spec" class="text-slate-400 text-[9px]">REVOLVER (BALANCED)</span>
         </div>
         <div class="grid grid-cols-5 gap-1">
-          <button onclick="selectWeapon('revolver')" id="btn-revolver" class="weapon-btn py-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-[10px] font-orbitron font-black text-white active:scale-95 transition-all">
-            REV
-          </button>
-          <button onclick="selectWeapon('shotgun')" id="btn-shotgun" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">
-            SG
-          </button>
-          <button onclick="selectWeapon('smg')" id="btn-smg" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">
-            SMG
-          </button>
-          <button onclick="selectWeapon('sniper')" id="btn-sniper" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">
-            SNP
-          </button>
-          <button onclick="selectWeapon('plasma')" id="btn-plasma" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">
-            PLS
-          </button>
+          <button onclick="selectWeapon('revolver')" id="btn-revolver" class="weapon-btn py-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-[10px] font-orbitron font-black text-white active:scale-95 transition-all">REV</button>
+          <button onclick="selectWeapon('shotgun')" id="btn-shotgun" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SG</button>
+          <button onclick="selectWeapon('smg')" id="btn-smg" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SMG</button>
+          <button onclick="selectWeapon('sniper')" id="btn-sniper" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SNP</button>
+          <button onclick="selectWeapon('plasma')" id="btn-plasma" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">PLS</button>
         </div>
       </div>
 
-      <!-- Bot Difficulty Selector -->
       <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-inner">
         <div class="text-[10px] font-orbitron text-slate-400 font-bold mb-1.5 px-1">BOT DIFFICULTY:</div>
         <div class="grid grid-cols-3 gap-1.5">
@@ -129,231 +81,94 @@
         </div>
       </div>
 
-      <!-- Mode Buttons -->
       <div class="flex flex-col gap-2 w-full mb-1">
-        <button onclick="startGame('ai')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl pulse-btn active:scale-95 transition-all text-sm tracking-wider">
-          1 PLAYER (VS BOT)
-        </button>
-        <button onclick="startGame('pvp')" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">
-          2 PLAYERS (LOCAL DUEL)
-        </button>
+        <button onclick="startGame('ai')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl pulse-btn active:scale-95 transition-all text-sm tracking-wider">1 PLAYER (VS BOT)</button>
+        <button onclick="startGame('pvp')" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">2 PLAYERS (LOCAL DUEL)</button>
+        <button onclick="showOnline(true)" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🌐 2 PLAYERS (ONLINE)</button>
       </div>
     </div>
 
-    <!-- Gameover Overlay -->
-    <div id="gameover-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 z-20 opacity-0 pointer-events-none transition-opacity duration-300">
-      <h2 id="winner-text" class="font-orbitron text-3xl font-black mb-1 text-center tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent glow-title">
-        PLAYER 1 WINS!
-      </h2>
-      <p class="text-slate-400 text-[10px] mb-6 font-orbitron tracking-widest uppercase">TOUCH BELOW TO REMATCH</p>
-      <button onclick="resetGame()" class="py-3 px-8 bg-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">
-        PLAY AGAIN
-      </button>
+    <!-- Online Panel -->
+    <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex-col items-center justify-center gap-3 p-5 z-30">
+      <h2 class="font-orbitron text-xl font-black text-sky-400 tracking-wider">ONLINE DUEL</h2>
+      <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
+      <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST GAME</button>
+      <div id="room-code" class="font-orbitron text-4xl font-black text-white tracking-[0.3em] h-10">----</div>
+      <div class="w-full h-px bg-slate-800"></div>
+      <div class="flex gap-2 w-full">
+        <input id="join-code" maxlength="4" placeholder="CODE" autocomplete="off" style="touch-action:auto;user-select:text;-webkit-user-select:text" class="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-xl px-3 text-center font-orbitron text-lg uppercase text-white tracking-widest">
+        <button onclick="joinGame()" class="px-5 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm">JOIN</button>
+      </div>
+      <p id="net-status" class="text-[11px] font-orbitron text-sky-300 text-center min-h-[2.5em]"></p>
+      <button onclick="showOnline(false)" class="py-2 px-6 bg-slate-800 border border-slate-700 text-slate-300 font-orbitron font-bold rounded-xl text-xs active:scale-95">BACK</button>
     </div>
 
+    <!-- Gameover -->
+    <div id="gameover-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 z-20 opacity-0 pointer-events-none transition-opacity duration-300">
+      <h2 id="winner-text" class="font-orbitron text-3xl font-black mb-1 text-center tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent glow-title">PLAYER 1 WINS!</h2>
+      <p class="text-slate-400 text-[10px] mb-6 font-orbitron tracking-widest uppercase">TOUCH BELOW TO REMATCH</p>
+      <button onclick="resetGame()" class="py-3 px-8 bg-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">PLAY AGAIN</button>
+      <button onclick="location.reload()" class="mt-3 py-2 px-6 bg-slate-800 border border-slate-700 text-slate-300 font-orbitron font-bold rounded-xl text-xs active:scale-95">MENU</button>
+    </div>
   </div>
 
-  <!-- On-Screen Touch Control Buttons -->
+  <!-- Touch controls -->
   <div class="w-full max-w-md grid grid-cols-2 gap-2 h-14 shrink-0 mb-1">
-    <button id="p1-touch-btn" class="w-full h-full bg-amber-500/20 border-2 border-amber-500/80 rounded-2xl font-orbitron font-black text-amber-300 text-xs active:bg-amber-500 active:text-slate-950 transition-colors flex items-center justify-center gap-1 shadow-lg">
-      <span class="text-sm">🔥</span> TAP P1 FIRE
-    </button>
-    <button id="p2-touch-btn" class="w-full h-full bg-rose-500/20 border-2 border-rose-500/80 rounded-2xl font-orbitron font-black text-rose-300 text-xs active:bg-rose-500 active:text-white transition-colors flex items-center justify-center gap-1 shadow-lg opacity-40 pointer-events-none">
-      TAP P2 FIRE <span class="text-sm">🔥</span>
-    </button>
+    <button id="p1-touch-btn" class="w-full h-full bg-amber-500/20 border-2 border-amber-500/80 rounded-2xl font-orbitron font-black text-amber-300 text-xs active:bg-amber-500 active:text-slate-950 transition-colors flex items-center justify-center gap-1 shadow-lg"><span class="text-sm">🔥</span> TAP P1 FIRE</button>
+    <button id="p2-touch-btn" class="w-full h-full bg-rose-500/20 border-2 border-rose-500/80 rounded-2xl font-orbitron font-black text-rose-300 text-xs active:bg-rose-500 active:text-white transition-colors flex items-center justify-center gap-1 shadow-lg opacity-40 pointer-events-none">TAP P2 FIRE <span class="text-sm">🔥</span></button>
   </div>
 
   <script>
-    // Canvas Setup
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const W = canvas.width;  // 450 portrait
-    const H = canvas.height; // 700 portrait
+    const W = canvas.width, H = canvas.height;
 
-    // Game Control Flags
     let isRunning = false;
-    let gameMode = 'ai'; // 'ai', 'pvp'
-    let aiDifficulty = 'normal'; // 'easy', 'normal', 'pro'
-    let lastTime = 0;
-    let timeScale = 1.0;
+    let gameMode = 'ai'; // 'ai' | 'pvp' | 'online-host' | 'online-guest'
+    let aiDifficulty = 'normal';
+    let lastTime = 0, timeScale = 1.0;
     let soundEnabled = true;
     let selectedWeaponType = 'revolver';
+    let screenShakeTime = 0, screenShakeForce = 0;
 
-    // Effects
-    let screenShakeTime = 0;
-    let screenShakeForce = 0;
-
-    // Entity Lists
-    let bullets = [];
-    let particles = [];
-    let combatTexts = [];
-    let arenaPickups = [];
-    let bouncePads = [];
-    let obstacles = [];
-
+    let bullets = [], particles = [], combatTexts = [], arenaPickups = [], bouncePads = [], obstacles = [];
     let player1, player2;
 
-    // Weapon Configurations
     const WEAPONS = {
-      revolver: {
-        name: 'REVOLVER',
-        damage: 30,
-        recoilForce: 520,
-        torqueKick: 8,
-        spinBase: 1.5,
-        mass: 1.0,
-        cooldown: 0.35,
-        maxAmmo: 6,
-        reloadTime: 1.4,
-        bulletSpeed: 850,
-        spread: 0,
-        pellets: 1,
-        color: '#f59e0b',
-        spec: 'REVOLVER (BALANCED)'
-      },
-      shotgun: {
-        name: 'SHOTGUN',
-        damage: 14,
-        recoilForce: 820,
-        torqueKick: 12,
-        spinBase: 1.7,
-        mass: 1.4,
-        cooldown: 0.65,
-        maxAmmo: 4,
-        reloadTime: 1.8,
-        bulletSpeed: 750,
-        spread: 0.22,
-        pellets: 4,
-        color: '#ef4444',
-        spec: 'SHOTGUN (HEAVY KICK)'
-      },
-      smg: {
-        name: 'SMG',
-        damage: 14,
-        recoilForce: 300,
-        torqueKick: 5,
-        spinBase: 2.0,
-        mass: 0.8,
-        cooldown: 0.15,
-        maxAmmo: 12,
-        reloadTime: 1.2,
-        bulletSpeed: 820,
-        spread: 0.08,
-        pellets: 1,
-        color: '#10b981',
-        spec: 'SMG (RAPID BURST)'
-      },
-      sniper: {
-        name: 'SNIPER',
-        damage: 60,
-        recoilForce: 1000,
-        torqueKick: 15,
-        spinBase: 1.2,
-        mass: 1.7,
-        cooldown: 0.85,
-        maxAmmo: 3,
-        reloadTime: 2.0,
-        bulletSpeed: 1300,
-        spread: 0,
-        pellets: 1,
-        color: '#3b82f6',
-        spec: 'HEAVY SNIPER (HIGH DAMAGE)'
-      },
-      plasma: {
-        name: 'PLASMA',
-        damage: 40,
-        recoilForce: 650,
-        torqueKick: 9,
-        spinBase: 1.6,
-        mass: 1.1,
-        cooldown: 0.45,
-        maxAmmo: 5,
-        reloadTime: 1.5,
-        bulletSpeed: 650,
-        spread: 0,
-        pellets: 1,
-        color: '#a855f7',
-        spec: 'PLASMA (ENERGY BLAST)'
-      }
+      revolver: { name:'REVOLVER', damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
+      shotgun: { name:'SHOTGUN', damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
+      smg: { name:'SMG', damage:14, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
+      sniper: { name:'SNIPER', damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
+      plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' }
     };
 
-    // Procedural Web Audio Engine
+    // ---------- Audio ----------
     const AudioEngine = {
       ctx: null,
       init() {
-        if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) this.ctx = new AudioCtx();
-        }
-        if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
+        if (!this.ctx) { const A = window.AudioContext || window.webkitAudioContext; if (A) this.ctx = new A(); }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      tone(type, f0, f1, dur, vol) {
+        if (!soundEnabled || !this.ctx) return;
+        try {
+          const t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = type;
+          o.frequency.setValueAtTime(f0, t);
+          o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+          g.gain.setValueAtTime(vol, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(); o.stop(t + dur);
+        } catch (e) {}
       },
       playShoot(type) {
-        if (!soundEnabled || !this.ctx) return;
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = type === 'plasma' ? 'sine' : 'sawtooth';
-          const freq = type === 'sniper' ? 450 : (type === 'shotgun' ? 200 : 320);
-          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.15);
-        } catch(e){}
+        const f = type === 'sniper' ? 450 : (type === 'shotgun' ? 200 : 320);
+        this.tone(type === 'plasma' ? 'sine' : 'sawtooth', f, 30, 0.15, 0.25);
       },
-      playHit() {
-        if (!soundEnabled || !this.ctx) return;
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.1);
-        } catch(e){}
-      },
-      playBounce() {
-        if (!soundEnabled || !this.ctx) return;
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(500, this.ctx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.12);
-        } catch(e){}
-      },
-      playPickup() {
-        if (!soundEnabled || !this.ctx) return;
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(440, this.ctx.currentTime);
-          osc.frequency.setValueAtTime(880, this.ctx.currentTime + 0.08);
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.16);
-        } catch(e){}
-      }
+      playHit() { this.tone('square', 160, 40, 0.1, 0.2); },
+      playBounce() { this.tone('sine', 180, 500, 0.12, 0.2); },
+      playPickup() { this.tone('triangle', 440, 880, 0.16, 0.2); }
     };
 
     function toggleSound() {
@@ -367,10 +182,10 @@
         btn.classList.remove('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-white');
         btn.classList.add('bg-slate-800', 'border', 'border-slate-700', 'text-slate-400');
       });
-      const activeBtn = document.getElementById(`btn-${type}`);
-      if (activeBtn) {
-        activeBtn.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
-        activeBtn.classList.add('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-white');
+      const a = document.getElementById(`btn-${type}`);
+      if (a) {
+        a.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
+        a.classList.add('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-white');
       }
       document.getElementById('weapon-spec').innerText = WEAPONS[type].spec;
     }
@@ -381,52 +196,39 @@
         btn.classList.remove('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-amber-300');
         btn.classList.add('bg-slate-800', 'border', 'border-slate-700', 'text-slate-400');
       });
-      const activeBtn = document.getElementById(`diff-${diff}`);
-      if (activeBtn) {
-        activeBtn.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
-        activeBtn.classList.add('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-amber-300');
+      const a = document.getElementById(`diff-${diff}`);
+      if (a) {
+        a.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
+        a.classList.add('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-amber-300');
       }
     }
 
-    // Floating Text FX
+    // ---------- Entities ----------
     class FloatingText {
-      constructor(x, y, text, color) {
-        this.x = x; this.y = y; this.text = text; this.color = color;
-        this.life = 0.8; this.maxLife = 0.8;
-      }
-      update(dt) {
-        this.y -= 30 * dt;
-        this.life -= dt;
-      }
+      constructor(x, y, text, color) { this.x = x; this.y = y; this.text = text; this.color = color; this.life = 0.8; this.maxLife = 0.8; }
+      update(dt) { this.y -= 30 * dt; this.life -= dt; }
       draw() {
-        const alpha = Math.max(0, this.life / this.maxLife);
         ctx.save();
         ctx.font = '900 13px Orbitron';
         ctx.fillStyle = this.color;
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = Math.max(0, this.life / this.maxLife);
         ctx.textAlign = 'center';
         ctx.fillText(this.text, this.x, this.y);
         ctx.restore();
       }
     }
 
-    // Bullet Class
     class Bullet {
       constructor(x, y, vx, vy, isPlayer1, config) {
         this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-        this.isPlayer1 = isPlayer1;
-        this.config = config;
+        this.isPlayer1 = isPlayer1; this.config = config;
         this.radius = config.pellets > 1 ? 3 : 4;
-        this.active = true;
-        this.trail = [];
+        this.active = true; this.trail = [];
       }
       update(dt) {
         this.trail.push({ x: this.x, y: this.y });
         if (this.trail.length > 5) this.trail.shift();
-
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-
+        this.x += this.vx * dt; this.y += this.vy * dt;
         if (this.x < 10 || this.x > W - 10 || this.y < 10 || this.y > H - 10) {
           this.active = false;
           createSparks(this.x, this.y, '#cbd5e1');
@@ -434,15 +236,10 @@
       }
       draw() {
         ctx.beginPath();
-        for (let i = 0; i < this.trail.length; i++) {
-          const pt = this.trail[i];
-          if (i === 0) ctx.moveTo(pt.x, pt.y);
-          else ctx.lineTo(pt.x, pt.y);
-        }
-        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245, 158, 11, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+        this.trail.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
+        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)';
         ctx.lineWidth = this.radius * 1.5;
         ctx.stroke();
-
         ctx.fillStyle = this.config.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -450,127 +247,87 @@
       }
     }
 
-    // Spark Particle
     class Particle {
-      constructor(x, y, vx, vy, color, life) {
-        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-        this.color = color; this.life = life; this.maxLife = life;
-      }
-      update(dt) {
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-        this.vy += 150 * dt;
-        this.life -= dt;
-      }
+      constructor(x, y, vx, vy, color, life) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.color = color; this.life = life; this.maxLife = life; }
+      update(dt) { this.x += this.vx * dt; this.y += this.vy * dt; this.vy += 150 * dt; this.life -= dt; }
       draw() {
-        const alpha = Math.max(0, this.life / this.maxLife);
-        ctx.fillStyle = this.color;
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 2.5 * alpha, 0, Math.PI * 2);
-        ctx.fill();
+        const a = Math.max(0, this.life / this.maxLife);
+        ctx.fillStyle = this.color; ctx.globalAlpha = a;
+        ctx.beginPath(); ctx.arc(this.x, this.y, 2.5 * a, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1.0;
       }
     }
 
     function createSparks(x, y, color) {
       for (let i = 0; i < 6; i++) {
-        const ang = Math.random() * Math.PI * 2;
-        const spd = Math.random() * 140 + 30;
+        const ang = Math.random() * Math.PI * 2, spd = Math.random() * 140 + 30;
         particles.push(new Particle(x, y, Math.cos(ang) * spd, Math.sin(ang) * spd, color, 0.15 + Math.random() * 0.1));
       }
     }
 
-    // Pickup Crate Class
     class PickupCrate {
-      constructor(x, y, type) {
-        this.x = x; this.y = y; this.type = type; // 'health' or 'ammo'
-        this.size = 22; this.active = true; this.pulse = 0;
-      }
+      constructor(x, y, type) { this.x = x; this.y = y; this.type = type; this.size = 22; this.active = true; this.pulse = 0; }
       update(dt) { this.pulse += dt * 4; }
       draw() {
         if (!this.active) return;
+        const h = this.type === 'health';
         ctx.save();
         ctx.translate(this.x, this.y);
         const fy = Math.sin(this.pulse) * 3;
-        ctx.fillStyle = this.type === 'health' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(245, 158, 11, 0.25)';
-        ctx.strokeStyle = this.type === 'health' ? '#10b981' : '#f59e0b';
+        ctx.fillStyle = h ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)';
+        ctx.strokeStyle = h ? '#10b981' : '#f59e0b';
         ctx.lineWidth = 2;
-        ctx.fillRect(-this.size/2, -this.size/2 + fy, this.size, this.size);
-        ctx.strokeRect(-this.size/2, -this.size/2 + fy, this.size, this.size);
-        ctx.fillStyle = this.type === 'health' ? '#10b981' : '#f59e0b';
+        ctx.fillRect(-this.size / 2, -this.size / 2 + fy, this.size, this.size);
+        ctx.strokeRect(-this.size / 2, -this.size / 2 + fy, this.size, this.size);
+        ctx.fillStyle = h ? '#10b981' : '#f59e0b';
         ctx.font = '900 11px Orbitron';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.type === 'health' ? '+' : '⚡', 0, fy);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(h ? '+' : '⚡', 0, fy);
         ctx.restore();
       }
     }
 
-    // Bounce Pad
     class BouncePad {
-      constructor(x, y, w, h, nx, ny) {
-        this.x = x; this.y = y; this.w = w; this.h = h;
-        this.nx = nx; this.ny = ny; this.anim = 0;
-      }
+      constructor(x, y, w, h, nx, ny) { this.x = x; this.y = y; this.w = w; this.h = h; this.nx = nx; this.ny = ny; this.anim = 0; }
       trigger() { this.anim = 0.2; AudioEngine.playBounce(); }
       update(dt) { if (this.anim > 0) this.anim -= dt; }
       draw() {
         ctx.save();
         ctx.fillStyle = this.anim > 0 ? '#38bdf8' : '#0284c7';
-        ctx.strokeStyle = '#7dd3fc';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 1.5;
         ctx.fillRect(this.x, this.y, this.w, this.h);
         ctx.strokeRect(this.x, this.y, this.w, this.h);
         ctx.restore();
       }
     }
 
-    // Physics Gun Class
     class PhysicsGun {
       constructor(x, y, config, isPlayer1) {
-        this.x = x; this.y = y;
-        this.vx = 0; this.vy = 0;
-        this.config = config;
-        this.isPlayer1 = isPlayer1;
-
+        this.x = x; this.y = y; this.vx = 0; this.vy = 0;
+        this.config = config; this.isPlayer1 = isPlayer1;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
-
-        this.hp = 100;
-        this.ammo = config.maxAmmo;
-        this.cooldown = 0;
-        this.reloading = false;
-        this.reloadTimer = 0;
-        this.alive = true;
-        this.radius = 18;
+        this.hp = 100; this.ammo = config.maxAmmo;
+        this.cooldown = 0; this.reloading = false; this.reloadTimer = 0;
+        this.alive = true; this.radius = 18;
       }
 
       update(dt) {
         if (!this.alive) return;
-
-        // Auto spin rotation with gentle damping
         this.angle += this.spinSpeed * dt;
         this.spinSpeed *= Math.exp(-0.4 * dt);
 
-        // Physics step
-        const gravity = 420;
-        this.vy += gravity * dt;
+        this.vy += 420 * dt;
         this.vx *= Math.exp(-0.75 * dt);
         this.vy *= Math.exp(-0.75 * dt);
+        this.x += this.vx * dt; this.y += this.vy * dt;
 
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-
-        // Boundary bounce
-        const margin = 22;
-        const bnc = 0.65;
+        const margin = 22, bnc = 0.65;
         if (this.x < margin) { this.x = margin; this.vx = Math.abs(this.vx) * bnc; this.spinSpeed *= -0.8; }
         if (this.x > W - margin) { this.x = W - margin; this.vx = -Math.abs(this.vx) * bnc; this.spinSpeed *= -0.8; }
         if (this.y < margin) { this.y = margin; this.vy = Math.abs(this.vy) * bnc; }
         if (this.y > H - margin - 10) { this.y = H - margin - 10; this.vy = -Math.abs(this.vy) * bnc; this.vx *= 0.85; }
 
-        // Bounce pads
         bouncePads.forEach(pad => {
           if (this.x > pad.x - 12 && this.x < pad.x + pad.w + 12 && this.y > pad.y - 12 && this.y < pad.y + pad.h + 12) {
             pad.trigger();
@@ -580,7 +337,6 @@
           }
         });
 
-        // Obstacles
         obstacles.forEach(obs => {
           if (this.x > obs.x - 12 && this.x < obs.x + obs.w + 12 && this.y > obs.y - 12 && this.y < obs.y + obs.h + 12) {
             this.vy = -Math.abs(this.vy) * 0.7;
@@ -588,7 +344,6 @@
           }
         });
 
-        // Pickups
         arenaPickups.forEach(crate => {
           if (crate.active && Math.hypot(this.x - crate.x, this.y - crate.y) < this.radius + 12) {
             crate.active = false;
@@ -597,8 +352,7 @@
               this.hp = Math.min(100, this.hp + 30);
               combatTexts.push(new FloatingText(this.x, this.y - 18, '+30 HP', '#10b981'));
             } else {
-              this.ammo = this.config.maxAmmo;
-              this.reloading = false;
+              this.ammo = this.config.maxAmmo; this.reloading = false;
               combatTexts.push(new FloatingText(this.x, this.y - 18, 'AMMO REFILL', '#f59e0b'));
             }
           }
@@ -607,10 +361,7 @@
         if (this.cooldown > 0) this.cooldown -= dt;
         if (this.reloading) {
           this.reloadTimer -= dt;
-          if (this.reloadTimer <= 0) {
-            this.reloading = false;
-            this.ammo = this.config.maxAmmo;
-          }
+          if (this.reloadTimer <= 0) { this.reloading = false; this.ammo = this.config.maxAmmo; }
         }
       }
 
@@ -619,8 +370,7 @@
         if (this.reloading || this.cooldown > 0) return;
 
         if (this.ammo <= 0) {
-          this.reloading = true;
-          this.reloadTimer = this.config.reloadTime;
+          this.reloading = true; this.reloadTimer = this.config.reloadTime;
           combatTexts.push(new FloatingText(this.x, this.y - 20, 'RELOADING', '#cbd5e1'));
           return;
         }
@@ -629,335 +379,437 @@
         this.cooldown = this.config.cooldown;
         AudioEngine.playShoot(this.config.name.toLowerCase());
 
-        const dirX = Math.cos(this.angle);
-        const dirY = Math.sin(this.angle);
-
-        // Recoil vector & torque kick
+        const dirX = Math.cos(this.angle), dirY = Math.sin(this.angle);
         const recoil = this.config.recoilForce / this.config.mass;
-        this.vx -= dirX * recoil;
-        this.vy -= dirY * recoil;
+        this.vx -= dirX * recoil; this.vy -= dirY * recoil;
         this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * 3);
 
-        const barrelLen = 26;
-        const muzzleX = this.x + dirX * barrelLen;
-        const muzzleY = this.y + dirY * barrelLen;
+        const muzzleX = this.x + dirX * 26, muzzleY = this.y + dirY * 26;
 
         for (let i = 0; i < this.config.pellets; i++) {
-          const spreadAngle = this.angle + (Math.random() - 0.5) * this.config.spread;
-          const bVx = Math.cos(spreadAngle) * this.config.bulletSpeed;
-          const bVy = Math.sin(spreadAngle) * this.config.bulletSpeed;
-          bullets.push(new Bullet(muzzleX, muzzleY, bVx, bVy, this.isPlayer1, this.config));
+          const sa = this.angle + (Math.random() - 0.5) * this.config.spread;
+          bullets.push(new Bullet(muzzleX, muzzleY, Math.cos(sa) * this.config.bulletSpeed, Math.sin(sa) * this.config.bulletSpeed, this.isPlayer1, this.config));
         }
-
-        for (let k = 0; k < 5; k++) {
-          const pAng = this.angle + (Math.random() - 0.5) * 0.4;
-          const pSpd = Math.random() * 180 + 60;
-          particles.push(new Particle(muzzleX, muzzleY, Math.cos(pAng) * pSpd, Math.sin(pAng) * pSpd, '#fef08a', 0.12));
-        }
+        muzzleFlash(muzzleX, muzzleY, this.angle);
 
         screenShakeTime = 0.08;
         screenShakeForce = this.config.recoilForce * 0.004;
 
-        if (this.ammo <= 0) {
-          this.reloading = true;
-          this.reloadTimer = this.config.reloadTime;
-        }
+        if (this.ammo <= 0) { this.reloading = true; this.reloadTimer = this.config.reloadTime; }
       }
 
       draw() {
         if (!this.alive) return;
-
         ctx.save();
         ctx.translate(this.x, this.y);
-
-        // Aim dotted line
-        const guideLen = 140;
-        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245, 158, 11, 0.35)' : 'rgba(239, 68, 68, 0.35)';
+        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
         ctx.lineWidth = 1.2;
         ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(Math.cos(this.angle) * guideLen, Math.sin(this.angle) * guideLen);
+        ctx.beginPath(); ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(this.angle) * 140, Math.sin(this.angle) * 140);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Render Gun
         ctx.rotate(this.angle);
-        const themeColor = this.isPlayer1 ? '#f59e0b' : '#ef4444';
-
-        ctx.fillStyle = themeColor;
+        ctx.fillStyle = this.isPlayer1 ? '#f59e0b' : '#ef4444';
         ctx.fillRect(-8, -5, 26, 10);
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(6, -3, 18, 6);
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(-5, 3, 10, 13);
-
+        ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
+        ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
         ctx.restore();
 
-        // Reload progress arc
         if (this.reloading) {
           ctx.save();
           ctx.beginPath();
           const progress = 1 - (this.reloadTimer / this.config.reloadTime);
-          ctx.arc(this.x, this.y - 26, 8, -Math.PI/2, (-Math.PI/2) + (Math.PI * 2 * progress));
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
+          ctx.arc(this.x, this.y - 26, 8, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * progress));
+          ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.stroke();
           ctx.restore();
         }
       }
     }
 
-    // AI Timing Logic
-    function updateAI(dt) {
-      if (!player2 || !player2.alive || !player1 || !player1.alive) return;
-
-      const dx = player1.x - player2.x;
-      const dy = player1.y - player2.y;
-      const targetAngle = Math.atan2(dy, dx);
-
-      let angleDiff = Math.abs(player2.angle - targetAngle);
-      while (angleDiff > Math.PI * 2) angleDiff -= Math.PI * 2;
-      if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
-
-      const threshold = aiDifficulty === 'pro' ? 0.45 : (aiDifficulty === 'normal' ? 0.35 : 0.25);
-      const hitChance = aiDifficulty === 'pro' ? 0.9 : (aiDifficulty === 'normal' ? 0.7 : 0.45);
-
-      if (angleDiff < threshold && player2.cooldown <= 0 && !player2.reloading) {
-        if (Math.random() < hitChance) {
-          player2.shoot();
-        }
+    function muzzleFlash(x, y, angle) {
+      for (let k = 0; k < 5; k++) {
+        const pa = angle + (Math.random() - 0.5) * 0.4, ps = Math.random() * 180 + 60;
+        particles.push(new Particle(x, y, Math.cos(pa) * ps, Math.sin(pa) * ps, '#fef08a', 0.12));
       }
     }
 
-    // Environment Setup
+    // ---------- AI ----------
+    function updateAI(dt) {
+      if (!player2 || !player2.alive || !player1 || !player1.alive) return;
+      const targetAngle = Math.atan2(player1.y - player2.y, player1.x - player2.x);
+      let angleDiff = Math.abs(player2.angle - targetAngle);
+      while (angleDiff > Math.PI * 2) angleDiff -= Math.PI * 2;
+      if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+      const threshold = aiDifficulty === 'pro' ? 0.45 : (aiDifficulty === 'normal' ? 0.35 : 0.25);
+      const hitChance = aiDifficulty === 'pro' ? 0.9 : (aiDifficulty === 'normal' ? 0.7 : 0.45);
+      if (angleDiff < threshold && player2.cooldown <= 0 && !player2.reloading) {
+        if (Math.random() < hitChance) player2.shoot();
+      }
+    }
+
     function setupEnvironment() {
       bouncePads = [
         new BouncePad(0, H / 2 - 40, 14, 80, 1, 0),
         new BouncePad(W - 14, H / 2 - 40, 14, 80, -1, 0),
         new BouncePad(W / 2 - 50, H - 14, 100, 14, 0, -1)
       ];
-
-      obstacles = [
-        { x: W / 2 - 45, y: H / 3, w: 90, h: 18 }
-      ];
+      obstacles = [{ x: W / 2 - 45, y: H / 3, w: 90, h: 18 }];
     }
 
-    // Start Game
+    // ---------- Game flow ----------
+    let netP1Weapon = 'revolver', netP2Weapon = 'revolver';
+
     function startGame(mode) {
       AudioEngine.init();
       gameMode = mode;
+      const isNet = mode === 'online-host' || mode === 'online-guest';
 
       document.getElementById('menu-overlay').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('gameover-overlay').classList.add('opacity-0', 'pointer-events-none');
+      document.getElementById('online-panel').style.display = 'none';
 
       setupEnvironment();
 
-      const p1Config = WEAPONS[selectedWeaponType];
-      const p2Config = mode === 'pvp' ? WEAPONS[selectedWeaponType] : WEAPONS['revolver'];
+      const p1Config = isNet ? WEAPONS[netP1Weapon] : WEAPONS[selectedWeaponType];
+      const p2Config = isNet ? WEAPONS[netP2Weapon] : (mode === 'pvp' ? WEAPONS[selectedWeaponType] : WEAPONS['revolver']);
 
       player1 = new PhysicsGun(100, 200, p1Config, true);
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
 
-      bullets = [];
-      particles = [];
-      combatTexts = [];
-      arenaPickups = [];
+      bullets = []; particles = []; combatTexts = []; arenaPickups = [];
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
-      document.getElementById('p2-gun-name').innerText = mode === 'pvp' ? p2Config.name.substring(0, 4) : 'BOT';
+      document.getElementById('p2-gun-name').innerText = mode === 'ai' ? 'BOT' : p2Config.name.substring(0, 4);
 
+      // Which fire buttons are usable on THIS device
+      const p1Btn = document.getElementById('p1-touch-btn');
       const p2Btn = document.getElementById('p2-touch-btn');
-      if (mode === 'pvp') {
-        p2Btn.classList.remove('opacity-40', 'pointer-events-none');
-      } else {
-        p2Btn.classList.add('opacity-40', 'pointer-events-none');
-      }
+      const p1On = mode !== 'online-guest';
+      const p2On = mode === 'pvp' || mode === 'online-guest';
+      p1Btn.classList.toggle('opacity-40', !p1On); p1Btn.classList.toggle('pointer-events-none', !p1On);
+      p2Btn.classList.toggle('opacity-40', !p2On); p2Btn.classList.toggle('pointer-events-none', !p2On);
+      if (mode === 'online-guest') p2Btn.innerHTML = '🔥 TAP TO FIRE (YOU = P2)';
+      else p2Btn.innerHTML = 'TAP P2 FIRE <span class="text-sm">🔥</span>';
+      if (mode === 'online-host') p1Btn.innerHTML = '<span class="text-sm">🔥</span> TAP TO FIRE (YOU = P1)';
+      else p1Btn.innerHTML = '<span class="text-sm">🔥</span> TAP P1 FIRE';
 
+      if (mode === 'online-host') netSend({ t: 'start', p1: netP1Weapon, p2: netP2Weapon });
+
+      const wasRunning = isRunning;
       isRunning = true;
       timeScale = 1.0;
       lastTime = performance.now();
-
       updateHUD();
-      requestAnimationFrame(gameLoop);
+      if (!wasRunning) requestAnimationFrame(gameLoop);
     }
 
     function resetGame() {
+      if (gameMode === 'online-guest') {
+        netSend({ t: 'rematch' });
+        document.getElementById('winner-text').innerText = 'WAITING FOR HOST...';
+        return;
+      }
       startGame(gameMode);
+    }
+
+    function showGameOver(text) {
+      document.getElementById('winner-text').innerText = text;
+      document.getElementById('gameover-overlay').classList.remove('opacity-0', 'pointer-events-none');
     }
 
     function triggerVictory(winnerName) {
       timeScale = 0.25;
       setTimeout(() => {
         isRunning = false;
-        document.getElementById('winner-text').innerText = winnerName.toUpperCase() + " WINS!";
-        document.getElementById('gameover-overlay').classList.remove('opacity-0', 'pointer-events-none');
+        if (gameMode === 'online-host') netSend({ t: 'over', w: winnerName });
+        showGameOver(winnerName.toUpperCase() + ' WINS!');
       }, 1000);
     }
 
     function updateHUD() {
       if (!player1 || !player2) return;
-
-      const p1Hp = Math.max(0, Math.ceil(player1.hp));
-      const p2Hp = Math.max(0, Math.ceil(player2.hp));
-
-      document.getElementById('p1-hp-fill').style.width = p1Hp + '%';
-      document.getElementById('p2-hp-fill').style.width = p2Hp + '%';
-
+      document.getElementById('p1-hp-fill').style.width = Math.max(0, Math.ceil(player1.hp)) + '%';
+      document.getElementById('p2-hp-fill').style.width = Math.max(0, Math.ceil(player2.hp)) + '%';
       document.getElementById('p1-ammo-text').innerText = player1.reloading ? 'RELOAD' : `${player1.ammo}/${player1.config.maxAmmo}`;
       document.getElementById('p2-ammo-text').innerText = player2.reloading ? 'RELOAD' : `${player2.ammo}/${player2.config.maxAmmo}`;
     }
 
-    // Touch Controls
-    document.getElementById('p1-touch-btn').addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      AudioEngine.init();
-      if (player1) player1.shoot();
-    });
+    // ---------- Input ----------
+    // who: 1 or 2. Routes the shot locally or over the network depending on mode.
+    function fireLocal(who) {
+      if (gameMode === 'online-guest') {
+        if (who === 2 && isRunning) netSend({ t: 'fire' });
+        return;
+      }
+      if (gameMode === 'online-host') { if (who === 1 && player1) player1.shoot(); return; }
+      if (who === 1 && player1) player1.shoot();
+      else if (who === 2 && gameMode === 'pvp' && player2) player2.shoot();
+    }
 
-    document.getElementById('p2-touch-btn').addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      AudioEngine.init();
-      if (gameMode === 'pvp' && player2) player2.shoot();
-    });
+    document.getElementById('p1-touch-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); AudioEngine.init(); fireLocal(1); });
+    document.getElementById('p2-touch-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); AudioEngine.init(); fireLocal(2); });
 
-    // Keyboard Fallback
     window.addEventListener('keydown', (e) => {
+      if (e.target && e.target.tagName === 'INPUT') return;
       AudioEngine.init();
-      if (e.code === 'KeyW' || e.code === 'Space') {
-        e.preventDefault();
-        if (player1) player1.shoot();
-      }
-      if (e.code === 'ArrowUp') {
-        e.preventDefault();
-        if (gameMode === 'pvp' && player2) player2.shoot();
-      }
+      if (e.code === 'KeyW' || e.code === 'Space') { e.preventDefault(); fireLocal(gameMode === 'online-guest' ? 2 : 1); }
+      if (e.code === 'ArrowUp') { e.preventDefault(); fireLocal(2); }
     });
 
-    // Direct Canvas Tap
     canvas.addEventListener('pointerdown', (e) => {
       AudioEngine.init();
       if (!isRunning) return;
+      if (gameMode === 'online-guest') { fireLocal(2); return; }
+      if (gameMode === 'online-host') { fireLocal(1); return; }
       const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      if (gameMode === 'pvp' && clickX > rect.width / 2) {
-        if (player2) player2.shoot();
-      } else {
-        if (player1) player1.shoot();
-      }
+      fireLocal(gameMode === 'pvp' && (e.clientX - rect.left) > rect.width / 2 ? 2 : 1);
     });
 
-    // Crate Timer
+    // ---------- Online multiplayer (PeerJS / WebRTC) ----------
+    // Host runs the whole simulation. Guest only sends "fire" and draws snapshots.
+    let peer = null, conn = null, netRole = null, lastSend = 0, bulletIdSeq = 0;
+
+    function netSend(m) { if (conn && conn.open) { try { conn.send(m); } catch (e) {} } }
+    function netStatus(t) { document.getElementById('net-status').innerText = t; }
+
+    function showOnline(show) {
+      document.getElementById('online-panel').style.display = show ? 'flex' : 'none';
+      if (!show) cleanupNet();
+    }
+
+    function cleanupNet() {
+      if (conn) { try { conn.close(); } catch (e) {} }
+      if (peer) { try { peer.destroy(); } catch (e) {} }
+      conn = null; peer = null; netRole = null;
+      document.getElementById('room-code').innerText = '----';
+      netStatus('');
+    }
+
+    function hostGame() {
+      cleanupNet();
+      netRole = 'host';
+      const code = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 4).toUpperCase().padEnd(4, 'X');
+      netStatus('Creating room...');
+      peer = new Peer('pduel-' + code);
+      peer.on('open', () => {
+        document.getElementById('room-code').innerText = code;
+        netStatus('Share this code with your friend. Waiting...');
+      });
+      peer.on('error', (e) => netStatus(e.type === 'unavailable-id' ? 'Code taken, tap HOST again' : 'Error: ' + e.type));
+      peer.on('connection', (c) => {
+        if (conn && conn.open) { c.close(); return; }
+        conn = c;
+        setupConn();
+      });
+    }
+
+    function joinGame() {
+      const code = document.getElementById('join-code').value.trim().toUpperCase();
+      if (code.length < 4) { netStatus('Enter the 4-letter code'); return; }
+      cleanupNet();
+      netRole = 'guest';
+      netStatus('Connecting...');
+      peer = new Peer();
+      peer.on('open', () => { conn = peer.connect('pduel-' + code); setupConn(); });
+      peer.on('error', (e) => netStatus(e.type === 'peer-unavailable' ? 'Room not found' : 'Error: ' + e.type));
+    }
+
+    function setupConn() {
+      conn.on('open', () => {
+        if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType }); }
+      });
+      conn.on('data', handleNet);
+      conn.on('close', onNetClose);
+      conn.on('error', onNetClose);
+    }
+
+    function onNetClose() {
+      if (!netRole) return;
+      const playing = isRunning;
+      isRunning = false; conn = null;
+      netStatus('Disconnected');
+      if (playing) showGameOver('OPPONENT LEFT');
+    }
+
+    function handleNet(m) {
+      switch (m.t) {
+        case 'hello': // host: guest joined
+          if (netRole !== 'host') return;
+          netP1Weapon = selectedWeaponType;
+          netP2Weapon = WEAPONS[m.w] ? m.w : 'revolver';
+          startGame('online-host');
+          break;
+        case 'start': // guest: host started a round
+          if (netRole !== 'guest') return;
+          netP1Weapon = m.p1; netP2Weapon = m.p2;
+          startGame('online-guest');
+          break;
+        case 's':
+          if (gameMode === 'online-guest' && isRunning) applySnapshot(m);
+          break;
+        case 'fire':
+          if (gameMode === 'online-host' && player2) player2.shoot();
+          break;
+        case 'over':
+          if (netRole === 'guest') { isRunning = false; showGameOver(m.w.toUpperCase() + ' WINS!'); }
+          break;
+        case 'rematch':
+          if (gameMode === 'online-host') resetGame();
+          break;
+      }
+    }
+
+    // Host -> guest state
+    function makeSnapshot() {
+      const g = p => [Math.round(p.x), Math.round(p.y), Math.round(p.vx), Math.round(p.vy), +p.angle.toFixed(3), +p.spinSpeed.toFixed(2),
+                      Math.round(p.hp), p.ammo, p.reloading ? 1 : 0, +p.reloadTimer.toFixed(2), p.alive ? 1 : 0];
+      return {
+        t: 's', p1: g(player1), p2: g(player2),
+        b: bullets.filter(b => b.active).map(b => [b.id || (b.id = ++bulletIdSeq), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.isPlayer1 ? 1 : 0, b.config.name.toLowerCase()]),
+        c: arenaPickups.filter(c => c.active).map(c => [Math.round(c.x), Math.round(c.y), c.type])
+      };
+    }
+
+    // Guest: apply host state, and trigger sounds/FX by comparing with previous state
+    function applySnapshot(s) {
+      if (!player1 || !player2) return;
+      [[player1, s.p1], [player2, s.p2]].forEach(([p, a]) => {
+        const [x, y, vx, vy, ang, sp, hp, ammo, rl, rt, al] = a;
+        if (ammo < p.ammo) {
+          AudioEngine.playShoot(p.config.name.toLowerCase());
+          screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
+          muzzleFlash(p.x + Math.cos(p.angle) * 26, p.y + Math.sin(p.angle) * 26, p.angle);
+        }
+        if (hp < p.hp) {
+          AudioEngine.playHit();
+          createSparks(x, y, '#ef4444');
+          combatTexts.push(new FloatingText(x, y - 12, `-${Math.round(p.hp - hp)}`, '#ef4444'));
+        } else if (hp > p.hp) {
+          AudioEngine.playPickup();
+          combatTexts.push(new FloatingText(x, y - 18, `+${Math.round(hp - p.hp)} HP`, '#10b981'));
+        }
+        p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.angle = ang; p.spinSpeed = sp;
+        p.hp = hp; p.ammo = ammo; p.reloading = !!rl; p.reloadTimer = rt; p.alive = !!al;
+      });
+
+      const oldB = new Map(bullets.map(b => [b.id, b]));
+      bullets = s.b.map(([id, x, y, vx, vy, p1, w]) => {
+        let b = oldB.get(id);
+        if (b) { b.x = x; b.y = y; b.vx = vx; b.vy = vy; b.active = true; return b; }
+        b = new Bullet(x, y, vx, vy, !!p1, WEAPONS[w]); b.id = id; return b;
+      });
+
+      const oldC = new Map(arenaPickups.map(c => [c.key, c]));
+      arenaPickups = s.c.map(([x, y, type]) => {
+        const k = x + '_' + y + type;
+        let c = oldC.get(k);
+        if (!c) { c = new PickupCrate(x, y, type); c.key = k; }
+        return c;
+      });
+    }
+
+    // Guest: smooth motion between snapshots (no real physics)
+    function guestStep(dt) {
+      [player1, player2].forEach(p => {
+        if (!p.alive) return;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.angle += p.spinSpeed * dt;
+        if (p.reloading) p.reloadTimer = Math.max(0, p.reloadTimer - dt);
+      });
+    }
+
+    // ---------- Crates (host / offline only) ----------
     setInterval(() => {
-      if (isRunning && arenaPickups.length < 2) {
-        const type = Math.random() > 0.4 ? 'ammo' : 'health';
-        const rx = Math.random() * (W - 160) + 80;
-        const ry = Math.random() * (H - 200) + 80;
-        arenaPickups.push(new PickupCrate(rx, ry, type));
+      if (isRunning && gameMode !== 'online-guest') {
+        arenaPickups = arenaPickups.filter(c => c.active);
+        if (arenaPickups.length < 2) {
+          const type = Math.random() > 0.4 ? 'ammo' : 'health';
+          arenaPickups.push(new PickupCrate(Math.random() * (W - 160) + 80, Math.random() * (H - 200) + 80, type));
+        }
       }
     }, 7000);
 
-    // Main Game Loop
+    // ---------- Main loop ----------
     function gameLoop(timestamp) {
       if (!isRunning) return;
 
       let dt = (timestamp - lastTime) / 1000;
       lastTime = timestamp;
-
       if (dt > 0.05) dt = 0.05;
       dt *= timeScale;
 
-      // Updates
-      player1.update(dt);
-      player2.update(dt);
-
-      if (gameMode === 'ai') {
-        updateAI(dt);
+      if (gameMode === 'online-guest') {
+        guestStep(dt);
+      } else {
+        player1.update(dt);
+        player2.update(dt);
+        if (gameMode === 'ai') updateAI(dt);
       }
 
       bouncePads.forEach(pad => pad.update(dt));
       arenaPickups.forEach(crate => crate.update(dt));
 
       for (let i = bullets.length - 1; i >= 0; i--) {
-        const b = bullets[i];
-        b.update(dt);
-        if (!b.active) bullets.splice(i, 1);
+        bullets[i].update(dt);
+        if (!bullets[i].active) bullets.splice(i, 1);
       }
-
       for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.update(dt);
-        if (p.life <= 0) particles.splice(i, 1);
+        particles[i].update(dt);
+        if (particles[i].life <= 0) particles.splice(i, 1);
       }
-
       for (let i = combatTexts.length - 1; i >= 0; i--) {
-        const t = combatTexts[i];
-        t.update(dt);
-        if (t.life <= 0) combatTexts.splice(i, 1);
+        combatTexts[i].update(dt);
+        if (combatTexts[i].life <= 0) combatTexts.splice(i, 1);
       }
 
-      // Hit Collisions
-      bullets.forEach(b => {
-        if (!b.active) return;
-        const target = b.isPlayer1 ? player2 : player1;
-
-        if (target.alive) {
-          const dist = Math.hypot(b.x - target.x, b.y - target.y);
-          if (dist < target.radius + b.radius) {
+      // Hit detection (host / offline only; guest just displays what host says)
+      if (gameMode !== 'online-guest') {
+        bullets.forEach(b => {
+          if (!b.active) return;
+          const target = b.isPlayer1 ? player2 : player1;
+          if (target.alive && Math.hypot(b.x - target.x, b.y - target.y) < target.radius + b.radius) {
             b.active = false;
             target.hp -= b.config.damage;
-
             AudioEngine.playHit();
             createSparks(b.x, b.y, b.config.color);
-
-            target.vx += b.vx * 0.2;
-            target.vy += b.vy * 0.2;
+            target.vx += b.vx * 0.2; target.vy += b.vy * 0.2;
             target.spinSpeed += (Math.random() - 0.5) * 16;
-
             combatTexts.push(new FloatingText(target.x, target.y - 12, `-${b.config.damage}`, '#ef4444'));
             updateHUD();
-
             if (target.hp <= 0 && target.alive) {
               target.alive = false;
-              triggerVictory(b.isPlayer1 ? "Player 1" : (gameMode === 'pvp' ? "Player 2" : "AI Bot"));
+              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'));
             }
           }
-        }
-      });
+        });
+      }
 
       updateHUD();
 
+      // Host streams state ~30x/sec
+      if (gameMode === 'online-host' && timestamp - lastSend > 33) {
+        lastSend = timestamp;
+        netSend(makeSnapshot());
+      }
+
       // Render
       ctx.clearRect(0, 0, W, H);
-
       ctx.save();
       if (screenShakeTime > 0) {
         screenShakeTime -= dt;
         ctx.translate((Math.random() - 0.5) * screenShakeForce * 8, (Math.random() - 0.5) * screenShakeForce * 8);
       }
 
-      // Grid background
-      ctx.strokeStyle = 'rgba(51, 65, 85, 0.2)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < W; x += 40) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-      }
-      for (let y = 0; y < H; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      }
+      ctx.strokeStyle = 'rgba(51,65,85,0.2)'; ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
-      // Obstacles
-      ctx.fillStyle = '#334155';
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 2;
-      obstacles.forEach(obs => {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-      });
+      ctx.fillStyle = '#334155'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      obstacles.forEach(o => { ctx.fillRect(o.x, o.y, o.w, o.h); ctx.strokeRect(o.x, o.y, o.w, o.h); });
 
-      // Render items
-      bouncePads.forEach(pad => pad.draw());
-      arenaPickups.forEach(crate => crate.draw());
+      bouncePads.forEach(p => p.draw());
+      arenaPickups.forEach(c => c.draw());
       particles.forEach(p => p.draw());
       bullets.forEach(b => b.draw());
       player1.draw();
@@ -966,11 +818,8 @@
 
       ctx.restore();
 
-      if (isRunning) {
-        requestAnimationFrame(gameLoop);
-      }
+      if (isRunning) requestAnimationFrame(gameLoop);
     }
   </script>
 </body>
 </html>
-```
