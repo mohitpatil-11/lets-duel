@@ -19,7 +19,7 @@
 <body class="bg-slate-950 text-slate-100 flex flex-col items-center justify-between p-2 select-none h-full w-full">
 
   <!-- Top HUD -->
-  <div class="w-full max-w-md flex items-center justify-between px-3 py-2 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-lg z-10 text-xs shrink-0 mt-1">
+  <div class="w-full max-w-md flex items-center justify-between px-3 py-2 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-lg z-10 text-xs shrink-0 mt-1">
     <div class="flex items-center gap-2 w-[44%]">
       <div class="font-orbitron font-black text-amber-400 text-sm">P1</div>
       <div class="flex-1 flex flex-col gap-1">
@@ -52,7 +52,7 @@
     <canvas id="gameCanvas" width="450" height="700" class="w-full h-full block cursor-pointer touch-none object-contain"></canvas>
 
     <!-- Main Menu -->
-    <div id="menu-overlay" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 z-20 transition-opacity duration-300 overflow-y-auto">
+    <div id="menu-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-between p-4 z-20 transition-opacity duration-300 overflow-y-auto">
       <div class="flex flex-col items-center text-center mt-2">
         <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">PISTOL DUEL</h1>
         <p class="font-orbitron text-[10px] text-amber-400/90 tracking-widest uppercase font-semibold mt-1">Mobile Physics Arena</p>
@@ -89,7 +89,7 @@
     </div>
 
     <!-- Online Panel -->
-    <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex-col items-center justify-center gap-3 p-5 z-30">
+    <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950/95 flex-col items-center justify-center gap-3 p-5 z-30">
       <h2 class="font-orbitron text-xl font-black text-sky-400 tracking-wider">ONLINE DUEL</h2>
       <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
       <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST GAME</button>
@@ -104,7 +104,7 @@
     </div>
 
     <!-- Gameover -->
-    <div id="gameover-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 z-20 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="gameover-overlay" style="visibility:hidden" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-20 opacity-0 pointer-events-none transition-opacity duration-300">
       <h2 id="winner-text" class="font-orbitron text-3xl font-black mb-1 text-center tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent glow-title">PLAYER 1 WINS!</h2>
       <p class="text-slate-400 text-[10px] mb-6 font-orbitron tracking-widest uppercase">TOUCH BELOW TO REMATCH</p>
       <button onclick="resetGame()" class="py-3 px-8 bg-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">PLAY AGAIN</button>
@@ -122,6 +122,15 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
+
+    const gridCanvas = document.createElement('canvas');
+    gridCanvas.width = W; gridCanvas.height = H;
+    (function () {
+      const g = gridCanvas.getContext('2d');
+      g.strokeStyle = 'rgba(51,65,85,0.2)'; g.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+      for (let y = 0; y < H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    })();
 
     let isRunning = false;
     let gameMode = 'ai'; // 'ai' | 'pvp' | 'online-host' | 'online-guest'
@@ -469,6 +478,9 @@
       document.getElementById('menu-overlay').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('gameover-overlay').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('online-panel').style.display = 'none';
+      document.getElementById('menu-overlay').style.visibility = 'hidden';
+      document.getElementById('gameover-overlay').style.visibility = 'hidden';
+      lastSeq = 0;
 
       setupEnvironment();
 
@@ -479,6 +491,7 @@
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
+      koActive = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = mode === 'ai' ? 'BOT' : p2Config.name.substring(0, 4);
@@ -516,24 +529,45 @@
 
     function showGameOver(text) {
       document.getElementById('winner-text').innerText = text;
+      document.getElementById('gameover-overlay').style.visibility = 'visible';
       document.getElementById('gameover-overlay').classList.remove('opacity-0', 'pointer-events-none');
     }
 
-    function triggerVictory(winnerName) {
-      timeScale = 0.25;
+    // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
+    let koActive = false, koX = 0, koY = 0, koStart = 0;
+    function startKO(x, y) {
+      koActive = true; koX = x; koY = y; koStart = performance.now();
+      for (let i = 0; i < 40; i++) {
+        const a = Math.random() * Math.PI * 2, s = Math.random() * 320 + 60;
+        particles.push(new Particle(x, y, Math.cos(a) * s, Math.sin(a) * s, i % 2 ? '#fef08a' : '#ef4444', 0.6 + Math.random() * 0.4));
+      }
+      screenShakeTime = 0.3; screenShakeForce = 4;
+      AudioEngine.tone('sawtooth', 120, 25, 0.5, 0.3);
+    }
+
+    function triggerVictory(winnerName, loser) {
+      timeScale = 0.2;
+      if (loser) startKO(loser.x, loser.y);
       setTimeout(() => {
         isRunning = false;
         if (gameMode === 'online-host') netSend({ t: 'over', w: winnerName });
         showGameOver(winnerName.toUpperCase() + ' WINS!');
-      }, 1000);
+      }, 1800);
     }
 
+    const hudCache = [];
     function updateHUD() {
       if (!player1 || !player2) return;
-      document.getElementById('p1-hp-fill').style.width = Math.max(0, Math.ceil(player1.hp)) + '%';
-      document.getElementById('p2-hp-fill').style.width = Math.max(0, Math.ceil(player2.hp)) + '%';
-      document.getElementById('p1-ammo-text').innerText = player1.reloading ? 'RELOAD' : `${player1.ammo}/${player1.config.maxAmmo}`;
-      document.getElementById('p2-ammo-text').innerText = player2.reloading ? 'RELOAD' : `${player2.ammo}/${player2.config.maxAmmo}`;
+      const v = [Math.max(0, Math.ceil(player1.hp)) + '%', Math.max(0, Math.ceil(player2.hp)) + '%',
+        player1.reloading ? 'RELOAD' : `${player1.ammo}/${player1.config.maxAmmo}`,
+        player2.reloading ? 'RELOAD' : `${player2.ammo}/${player2.config.maxAmmo}`];
+      const ids = ['p1-hp-fill', 'p2-hp-fill', 'p1-ammo-text', 'p2-ammo-text'];
+      v.forEach((val, i) => {
+        if (hudCache[i] === val) return;
+        hudCache[i] = val;
+        const el = document.getElementById(ids[i]);
+        if (i < 2) el.style.width = val; else el.innerText = val;
+      });
     }
 
     // ---------- Input ----------
@@ -569,7 +603,27 @@
 
     // ---------- Online multiplayer (PeerJS / WebRTC) ----------
     // Host runs the whole simulation. Guest only sends "fire" and draws snapshots.
-    let peer = null, conn = null, netRole = null, lastSend = 0, bulletIdSeq = 0;
+    let peer = null, conn = null, netRole = null, lastSend = 0, bulletIdSeq = 0, snapSeq = 0, lastSeq = 0;
+
+    // TURN relay: needed when the two players are on different networks.
+    // Get a free key at https://www.metered.ca/tools/openrelay/ and paste it here.
+    const METERED_API_KEY = '';
+    async function getIce() {
+      const fallback = [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      ];
+      if (!METERED_API_KEY) return fallback;
+      try {
+        const r = await fetch('https://openrelayproject.metered.ca/api/v1/turn/credentials?apiKey=' + METERED_API_KEY);
+        const list = await r.json();
+        if (Array.isArray(list) && list.length) return list;
+      } catch (e) {}
+      return fallback;
+    }
 
     function netSend(m) { if (conn && conn.open) { try { conn.send(m); } catch (e) {} } }
     function netStatus(t) { document.getElementById('net-status').innerText = t; }
@@ -587,12 +641,12 @@
       netStatus('');
     }
 
-    function hostGame() {
+    async function hostGame() {
       cleanupNet();
       netRole = 'host';
       const code = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 4).toUpperCase().padEnd(4, 'X');
       netStatus('Creating room...');
-      peer = new Peer('pduel-' + code);
+      peer = new Peer('pduel-' + code, { config: { iceServers: await getIce() } });
       peer.on('open', () => {
         document.getElementById('room-code').innerText = code;
         netStatus('Share this code with your friend. Waiting...');
@@ -605,14 +659,18 @@
       });
     }
 
-    function joinGame() {
+    async function joinGame() {
       const code = document.getElementById('join-code').value.trim().toUpperCase();
       if (code.length < 4) { netStatus('Enter the 4-letter code'); return; }
       cleanupNet();
       netRole = 'guest';
       netStatus('Connecting...');
-      peer = new Peer();
-      peer.on('open', () => { conn = peer.connect('pduel-' + code); setupConn(); });
+      peer = new Peer(undefined, { config: { iceServers: await getIce() } });
+      peer.on('open', () => {
+        conn = peer.connect('pduel-' + code, { serialization: 'json' });
+        setupConn();
+        setTimeout(() => { if (conn && !conn.open && !isRunning) netStatus('Still not connected. Check the code, or the network may be blocking it. Try again.'); }, 15000);
+      });
       peer.on('error', (e) => netStatus(e.type === 'peer-unavailable' ? 'Room not found' : 'Error: ' + e.type));
     }
 
@@ -647,7 +705,7 @@
           startGame('online-guest');
           break;
         case 's':
-          if (gameMode === 'online-guest' && isRunning) applySnapshot(m);
+          if (gameMode === 'online-guest' && isRunning && m.n > lastSeq) { lastSeq = m.n; applySnapshot(m); }
           break;
         case 'fire':
           if (gameMode === 'online-host' && player2) player2.shoot();
@@ -666,7 +724,7 @@
       const g = p => [Math.round(p.x), Math.round(p.y), Math.round(p.vx), Math.round(p.vy), +p.angle.toFixed(3), +p.spinSpeed.toFixed(2),
                       Math.round(p.hp), p.ammo, p.reloading ? 1 : 0, +p.reloadTimer.toFixed(2), p.alive ? 1 : 0];
       return {
-        t: 's', p1: g(player1), p2: g(player2),
+        t: 's', n: ++snapSeq, ts: timeScale, p1: g(player1), p2: g(player2),
         b: bullets.filter(b => b.active).map(b => [b.id || (b.id = ++bulletIdSeq), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.isPlayer1 ? 1 : 0, b.config.name.toLowerCase()]),
         c: arenaPickups.filter(c => c.active).map(c => [Math.round(c.x), Math.round(c.y), c.type])
       };
@@ -675,8 +733,10 @@
     // Guest: apply host state, and trigger sounds/FX by comparing with previous state
     function applySnapshot(s) {
       if (!player1 || !player2) return;
+      timeScale = s.ts || 1;
       [[player1, s.p1], [player2, s.p2]].forEach(([p, a]) => {
         const [x, y, vx, vy, ang, sp, hp, ammo, rl, rt, al] = a;
+        if (p.alive && !al) startKO(x, y);
         if (ammo < p.ammo) {
           AudioEngine.playShoot(p.config.name.toLowerCase());
           screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
@@ -690,15 +750,17 @@
           AudioEngine.playPickup();
           combatTexts.push(new FloatingText(x, y - 18, `+${Math.round(hp - p.hp)} HP`, '#10b981'));
         }
-        p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.angle = ang; p.spinSpeed = sp;
+        if (p.tx === undefined || Math.hypot(x - p.x, y - p.y) > 80) { p.x = x; p.y = y; p.angle = ang; }
+        p.tx = x; p.ty = y; p.tAng = ang;
+        p.vx = vx; p.vy = vy; p.spinSpeed = sp;
         p.hp = hp; p.ammo = ammo; p.reloading = !!rl; p.reloadTimer = rt; p.alive = !!al;
       });
 
       const oldB = new Map(bullets.map(b => [b.id, b]));
       bullets = s.b.map(([id, x, y, vx, vy, p1, w]) => {
         let b = oldB.get(id);
-        if (b) { b.x = x; b.y = y; b.vx = vx; b.vy = vy; b.active = true; return b; }
-        b = new Bullet(x, y, vx, vy, !!p1, WEAPONS[w]); b.id = id; return b;
+        if (b) { b.tx = x; b.ty = y; b.vx = vx; b.vy = vy; b.active = true; return b; }
+        b = new Bullet(x, y, vx, vy, !!p1, WEAPONS[w]); b.id = id; b.tx = x; b.ty = y; return b;
       });
 
       const oldC = new Map(arenaPickups.map(c => [c.key, c]));
@@ -712,10 +774,24 @@
 
     // Guest: smooth motion between snapshots (no real physics)
     function guestStep(dt) {
+      const k = 1 - Math.exp(-dt * 14); // how fast we blend toward the host's position
       [player1, player2].forEach(p => {
         if (!p.alive) return;
         p.x += p.vx * dt; p.y += p.vy * dt; p.angle += p.spinSpeed * dt;
+        if (p.tx !== undefined) {
+          p.tx += p.vx * dt; p.ty += p.vy * dt; p.tAng += p.spinSpeed * dt;
+          p.x += (p.tx - p.x) * k; p.y += (p.ty - p.y) * k;
+          let d = p.tAng - p.angle; d -= Math.PI * 2 * Math.round(d / (Math.PI * 2));
+          p.angle += d * k;
+        }
+        p.x = Math.min(W - 22, Math.max(22, p.x));
+        p.y = Math.min(H - 32, Math.max(22, p.y));
         if (p.reloading) p.reloadTimer = Math.max(0, p.reloadTimer - dt);
+      });
+      bullets.forEach(b => {
+        if (b.tx === undefined) return;
+        b.tx += b.vx * dt; b.ty += b.vy * dt;
+        b.x += (b.tx - b.x) * k; b.y += (b.ty - b.y) * k;
       });
     }
 
@@ -779,7 +855,7 @@
             updateHUD();
             if (target.hp <= 0 && target.alive) {
               target.alive = false;
-              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'));
+              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
             }
           }
         });
@@ -788,7 +864,7 @@
       updateHUD();
 
       // Host streams state ~30x/sec
-      if (gameMode === 'online-host' && timestamp - lastSend > 33) {
+      if (gameMode === 'online-host' && timestamp - lastSend >= 32) {
         lastSend = timestamp;
         netSend(makeSnapshot());
       }
@@ -801,9 +877,12 @@
         ctx.translate((Math.random() - 0.5) * screenShakeForce * 8, (Math.random() - 0.5) * screenShakeForce * 8);
       }
 
-      ctx.strokeStyle = 'rgba(51,65,85,0.2)'; ctx.lineWidth = 1;
-      for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-      for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      if (koActive) { // zoom in on the knocked-out gun
+        const z = 1 + 0.6 * Math.min(1, (performance.now() - koStart) / 500);
+        ctx.translate(koX, koY); ctx.scale(z, z); ctx.translate(-koX, -koY);
+      }
+
+      ctx.drawImage(gridCanvas, 0, 0);
 
       ctx.fillStyle = '#334155'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
       obstacles.forEach(o => { ctx.fillRect(o.x, o.y, o.w, o.h); ctx.strokeRect(o.x, o.y, o.w, o.h); });
@@ -817,6 +896,17 @@
       combatTexts.forEach(t => t.draw());
 
       ctx.restore();
+
+      if (koActive) { // white flash + K.O. text
+        const t = (performance.now() - koStart) / 1000;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 0.5 - t * 1.5); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = Math.min(1, t * 4);
+        ctx.font = '900 72px Orbitron'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.lineWidth = 6; ctx.strokeStyle = '#020617'; ctx.strokeText('K.O.', W / 2, H / 2);
+        ctx.fillStyle = '#ef4444'; ctx.fillText('K.O.', W / 2, H / 2);
+        ctx.restore();
+      }
 
       if (isRunning) requestAnimationFrame(gameLoop);
     }
