@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pistol Duel: Mobile Edition</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pistol Duel">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -56,6 +64,8 @@
       <div class="flex flex-col items-center text-center mt-2">
         <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">PISTOL DUEL</h1>
         <p class="font-orbitron text-[10px] text-amber-400/90 tracking-widest uppercase font-semibold mt-1">Mobile Physics Arena</p>
+        <p id="app-version" class="font-orbitron text-[9px] text-slate-500 mt-1"></p>
+        <button id="install-btn" style="display:none" onclick="installApp()" class="mt-2 py-1.5 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-[10px] font-orbitron font-bold text-emerald-300 active:scale-95">⬇ INSTALL APP</button>
       </div>
 
       <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-inner">
@@ -89,7 +99,7 @@
     </div>
 
     <!-- Online Panel -->
-    <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950/95 flex-col items-center justify-center gap-3 p-5 z-30">
+    <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950 flex-col items-center justify-center gap-3 p-5 z-30">
       <h2 class="font-orbitron text-xl font-black text-sky-400 tracking-wider">ONLINE DUEL</h2>
       <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
       <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST GAME</button>
@@ -119,6 +129,26 @@
   </div>
 
   <script>
+    // ---- App version: change this number every time you push an update ----
+    const APP_VERSION = '1';
+    document.getElementById('app-version').innerText = 'v' + APP_VERSION;
+
+    // ---- PWA: offline support + install button ----
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=' + APP_VERSION).catch(() => {}));
+    }
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); installPrompt = e;
+      document.getElementById('install-btn').style.display = 'inline-block';
+    });
+    function installApp() {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      installPrompt.userChoice.finally(() => { installPrompt = null; document.getElementById('install-btn').style.display = 'none'; });
+    }
+    window.addEventListener('appinstalled', () => { document.getElementById('install-btn').style.display = 'none'; });
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
@@ -607,6 +637,7 @@
 
     // TURN relay: needed when the two players are on different networks.
     // Get a free key at https://www.metered.ca/tools/openrelay/ and paste it here.
+    const METERED_APP = 'pistol-duel-mohit'; // your Metered app name (from the dashboard)
     const METERED_API_KEY = '114fa46b3f16d8da5b5dd70e6e93507ea132';
     async function getIce() {
       const fallback = [
@@ -618,7 +649,7 @@
       ];
       if (!METERED_API_KEY) return fallback;
       try {
-        const r = await fetch('https://openrelayproject.metered.ca/api/v1/turn/credentials?apiKey=' + METERED_API_KEY);
+        const r = await fetch('https://' + METERED_APP + '.metered.live/api/v1/turn/credentials?apiKey=' + METERED_API_KEY);
         const list = await r.json();
         if (Array.isArray(list) && list.length) return list;
       } catch (e) {}
