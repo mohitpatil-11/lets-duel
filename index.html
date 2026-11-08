@@ -6,6 +6,11 @@
   <title>Pistol Duel: Mobile Edition</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#020617">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pistol Duel: Mobile Edition">
+  <meta property="og:description" content="Physics shooter duel. Play vs a bot, locally, or online with friends!">
+  <meta property="og:image" content="https://mohitpatil-11.github.io/lets-duel/icon-512.png">
+  <meta name="twitter:card" content="summary">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Pistol Duel">
@@ -14,6 +19,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="config.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;600;700;900&display=swap');
     html, body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; background-color:#020617; }
@@ -104,6 +110,10 @@
       <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
       <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST GAME</button>
       <div id="room-code" class="font-orbitron text-4xl font-black text-white tracking-[0.3em] h-10">----</div>
+      <div id="share-btn" style="display:none" class="gap-2">
+        <button onclick="shareRoom()" class="py-2 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-xs font-orbitron font-bold text-emerald-300 active:scale-95">📤 SHARE</button>
+        <button onclick="copyInvite()" class="py-2 px-4 bg-indigo-500/20 border border-indigo-400 rounded-xl text-xs font-orbitron font-bold text-indigo-300 active:scale-95">📋 COPY (DISCORD)</button>
+      </div>
       <div class="w-full h-px bg-slate-800"></div>
       <div class="flex gap-2 w-full">
         <input id="join-code" maxlength="4" placeholder="CODE" autocomplete="off" style="touch-action:auto;user-select:text;-webkit-user-select:text" class="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-xl px-3 text-center font-orbitron text-lg uppercase text-white tracking-widest">
@@ -130,7 +140,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '1';
+    const APP_VERSION = '3';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -511,6 +521,7 @@
       document.getElementById('menu-overlay').style.visibility = 'hidden';
       document.getElementById('gameover-overlay').style.visibility = 'hidden';
       lastSeq = 0;
+      keepAwake();
 
       setupEnvironment();
 
@@ -638,7 +649,7 @@
     // TURN relay: needed when the two players are on different networks.
     // Get a free key at https://www.metered.ca/tools/openrelay/ and paste it here.
     const METERED_APP = 'pistol-duel-mohit'; // your Metered app name (from the dashboard)
-    const METERED_API_KEY = '114fa46b3f16d8da5b5dd70e6e93507ea132';
+    const METERED_API_KEY = (window.PD_CONFIG && window.PD_CONFIG.meteredKey) || '';
     async function getIce() {
       const fallback = [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -656,6 +667,44 @@
       return fallback;
     }
 
+    let wakeLock = null;
+    async function keepAwake() {
+      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      if (netRole || isRunning) keepAwake();
+      if (peer && !peer.destroyed && peer.disconnected) { netStatus('Reconnecting...'); peer.reconnect(); }
+    });
+
+    function copyInvite() {
+      const code = document.getElementById('room-code').innerText;
+      if (code.length !== 4) return;
+      const text = 'Join my Pistol Duel match! Room code: ' + code + ' ' + location.origin + location.pathname + '?room=' + code;
+      const done = () => netStatus('Invite copied! Paste it in Discord, WhatsApp or anywhere.');
+      const fallback = () => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { netStatus('Could not copy. Share the code ' + code + ' by hand.'); }
+        document.body.removeChild(ta);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(fallback);
+      else fallback();
+    }
+
+    function shareRoom() {
+      const code = document.getElementById('room-code').innerText;
+      if (code.length !== 4) return;
+      const url = location.origin + location.pathname + '?room=' + code;
+      const text = 'Join my Pistol Duel match! Room code: ' + code;
+      if (navigator.share) {
+        navigator.share({ title: 'Pistol Duel', text, url }).catch(() => {});
+      } else {
+        copyInvite();
+      }
+    }
+
     function netSend(m) { if (conn && conn.open) { try { conn.send(m); } catch (e) {} } }
     function netStatus(t) { document.getElementById('net-status').innerText = t; }
 
@@ -669,6 +718,7 @@
       if (peer) { try { peer.destroy(); } catch (e) {} }
       conn = null; peer = null; netRole = null;
       document.getElementById('room-code').innerText = '----';
+      document.getElementById('share-btn').style.display = 'none';
       netStatus('');
     }
 
@@ -680,7 +730,14 @@
       peer = new Peer('pduel-' + code, { config: { iceServers: await getIce() } });
       peer.on('open', () => {
         document.getElementById('room-code').innerText = code;
-        netStatus('Share this code with your friend. Waiting...');
+        document.getElementById('share-btn').style.display = 'flex';
+        netStatus('Tap SHARE or COPY and send the invite to your friend. Waiting...');
+        keepAwake();
+      });
+      // If the phone switches apps (e.g. to WhatsApp), the link to the matchmaking server can drop.
+      // Reconnecting keeps the same room code working.
+      peer.on('disconnected', () => {
+        if (peer && !peer.destroyed && document.visibilityState === 'visible') peer.reconnect();
       });
       peer.on('error', (e) => netStatus(e.type === 'unavailable-id' ? 'Code taken, tap HOST again' : 'Error: ' + e.type));
       peer.on('connection', (c) => {
@@ -941,6 +998,16 @@
 
       if (isRunning) requestAnimationFrame(gameLoop);
     }
+
+    // Invite link (?room=ABCD): open the online screen with the code filled in
+    (function () {
+      const r = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+      if (r.length === 4) {
+        document.getElementById('join-code').value = r;
+        showOnline(true);
+        netStatus('Room ' + r + ' is ready. Tap JOIN.');
+      }
+    })();
   </script>
 </body>
 </html>
