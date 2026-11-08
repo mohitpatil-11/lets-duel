@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Pistol Duel: Mobile Edition</title>
+  <title>Let’s Duel</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#020617">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Pistol Duel: Mobile Edition">
+  <meta property="og:title" content="Let’s Duel">
   <meta property="og:description" content="Physics shooter duel. Play vs a bot, locally, or online with friends!">
   <meta property="og:image" content="https://mohitpatil-11.github.io/lets-duel/icon-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Pistol Duel">
+  <meta name="apple-mobile-web-app-title" content="Let’s Duel">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -68,7 +68,7 @@
     <!-- Main Menu -->
     <div id="menu-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-between p-4 z-20 transition-opacity duration-300 overflow-y-auto">
       <div class="flex flex-col items-center text-center mt-2">
-        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">PISTOL DUEL</h1>
+        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">LET’S DUEL</h1>
         <p class="font-orbitron text-[10px] text-amber-400/90 tracking-widest uppercase font-semibold mt-1">Mobile Physics Arena</p>
         <p id="app-version" class="font-orbitron text-[9px] text-slate-500 mt-1"></p>
         <button id="install-btn" style="display:none" onclick="installApp()" class="mt-2 py-1.5 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-[10px] font-orbitron font-bold text-emerald-300 active:scale-95">⬇ INSTALL APP</button>
@@ -140,7 +140,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '3';
+    const APP_VERSION = '4';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -680,7 +680,7 @@
     function copyInvite() {
       const code = document.getElementById('room-code').innerText;
       if (code.length !== 4) return;
-      const text = 'Join my Pistol Duel match! Room code: ' + code + ' ' + location.origin + location.pathname + '?room=' + code;
+      const text = 'Join my Let’s Duel match! Room code: ' + code + ' ' + location.origin + location.pathname + '?room=' + code;
       const done = () => netStatus('Invite copied! Paste it in Discord, WhatsApp or anywhere.');
       const fallback = () => {
         const ta = document.createElement('textarea');
@@ -697,9 +697,9 @@
       const code = document.getElementById('room-code').innerText;
       if (code.length !== 4) return;
       const url = location.origin + location.pathname + '?room=' + code;
-      const text = 'Join my Pistol Duel match! Room code: ' + code;
+      const text = 'Join my Let’s Duel match! Room code: ' + code;
       if (navigator.share) {
-        navigator.share({ title: 'Pistol Duel', text, url }).catch(() => {});
+        navigator.share({ title: 'Let’s Duel', text, url }).catch(() => {});
       } else {
         copyInvite();
       }

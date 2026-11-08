@@ -1,6 +1,6 @@
 {
-  "name": "Pistol Duel: Mobile Edition",
-  "short_name": "Pistol Duel",
+  "name": "Let’s Duel",
+  "short_name": "Let’s Duel",
   "description": "Mobile physics shooter. Play vs bot, locally, or online.",
   "start_url": "./",
   "scope": "./",
