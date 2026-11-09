@@ -1,4 +1,4 @@
-gun_<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -61,6 +61,12 @@ gun_<!DOCTYPE html>
     </div>
   </div>
 
+  <div id="p3-hud" style="display:none" class="w-full max-w-md items-center gap-2 px-3 py-1 mt-1 bg-slate-900/90 border border-slate-800 rounded-2xl text-[10px] font-orbitron shrink-0">
+    <span class="font-black text-green-400">P3</span>
+    <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden"><div id="p3-hp-fill" class="h-full bg-gradient-to-r from-green-500 to-emerald-300 transition-all duration-150 w-full rounded-full"></div></div>
+    <span id="p3-ammo-text" class="text-green-400 font-black">6/6</span>
+  </div>
+
   <!-- Canvas wrapper -->
   <div class="relative w-full max-w-md flex-1 my-2 bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl flex items-center justify-center">
     <canvas id="gameCanvas" width="450" height="700" class="w-full h-full block cursor-pointer touch-none object-contain"></canvas>
@@ -101,6 +107,7 @@ gun_<!DOCTYPE html>
         <button onclick="startGame('ai')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl pulse-btn active:scale-95 transition-all text-sm tracking-wider">1 PLAYER (VS BOT)</button>
         <button onclick="startGame('pvp')" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">2 PLAYERS (LOCAL DUEL)</button>
         <button onclick="showOnline(true)" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🌐 2 PLAYERS (ONLINE)</button>
+        <button onclick="startGame('ffa')" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🔺 FREE FOR ALL (PvPvP)</button>
       </div>
     </div>
 
@@ -108,7 +115,9 @@ gun_<!DOCTYPE html>
     <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950 flex-col items-center justify-center gap-3 p-5 z-30">
       <h2 class="font-orbitron text-xl font-black text-sky-400 tracking-wider">ONLINE DUEL</h2>
       <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
-      <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST GAME</button>
+      <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST 2-PLAYER</button>
+      <button onclick="hostGame(true)" class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">🔺 HOST 3-PLAYER (FFA)</button>
+      <button id="start-btn" style="display:none" onclick="startFFA()" class="py-2 px-6 bg-green-500 text-slate-950 font-orbitron font-black rounded-xl active:scale-95 text-xs">▶ START MATCH</button>
       <div id="room-code" class="font-orbitron text-4xl font-black text-white tracking-[0.3em] h-10">----</div>
       <div id="share-btn" style="display:none" class="gap-2">
         <button onclick="shareRoom()" class="py-2 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-xs font-orbitron font-bold text-emerald-300 active:scale-95">📤 SHARE</button>
@@ -140,7 +149,7 @@ gun_<!DOCTYPE html>
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '5';
+    const APP_VERSION = '7';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -162,7 +171,10 @@ gun_<!DOCTYPE html>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
-    const GUN_SCALE = 1.4; // change this number to resize every gun (1.0 = original size)
+    const GUN_COLORS = ['#f59e0b', '#ef4444', '#22c55e'];
+    const AIM_COLORS = ['rgba(245,158,11,0.35)', 'rgba(239,68,68,0.35)', 'rgba(34,197,94,0.35)'];
+    const PLAYER_NAMES = ['Player 1', 'Red Bot', 'Green Bot'];
+    const GUN_SCALE = 1.2; // change this number to resize every gun (1.0 = original size)
 
     const gridCanvas = document.createElement('canvas');
     gridCanvas.width = W; gridCanvas.height = H;
@@ -182,7 +194,7 @@ gun_<!DOCTYPE html>
     let screenShakeTime = 0, screenShakeForce = 0;
 
     let bullets = [], particles = [], combatTexts = [], arenaPickups = [], bouncePads = [], obstacles = [];
-    let player1, player2;
+    let player1, player2, player3 = null;
 
     const WEAPONS = {
       revolver: { name:'REVOLVER', damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
@@ -287,7 +299,7 @@ gun_<!DOCTYPE html>
       draw() {
         ctx.beginPath();
         this.trail.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
-        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245,158,11,0.4)' : 'rgba(239,68,68,0.4)';
+        ctx.strokeStyle = AIM_COLORS[this.owner !== undefined ? this.owner : (this.isPlayer1 ? 0 : 1)];
         ctx.lineWidth = this.radius * 1.5;
         ctx.stroke();
         ctx.fillStyle = this.config.color;
@@ -352,9 +364,9 @@ gun_<!DOCTYPE html>
     }
 
     class PhysicsGun {
-      constructor(x, y, config, isPlayer1) {
+      constructor(x, y, config, isPlayer1, idx = isPlayer1 ? 0 : 1) {
         this.x = x; this.y = y; this.vx = 0; this.vy = 0;
-        this.config = config; this.isPlayer1 = isPlayer1;
+        this.config = config; this.isPlayer1 = isPlayer1; this.index = idx;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
         this.hp = 100; this.ammo = config.maxAmmo;
@@ -438,7 +450,9 @@ gun_<!DOCTYPE html>
 
         for (let i = 0; i < this.config.pellets; i++) {
           const sa = this.angle + (Math.random() - 0.5) * this.config.spread;
-          bullets.push(new Bullet(muzzleX, muzzleY, Math.cos(sa) * this.config.bulletSpeed, Math.sin(sa) * this.config.bulletSpeed, this.isPlayer1, this.config));
+          const nb = new Bullet(muzzleX, muzzleY, Math.cos(sa) * this.config.bulletSpeed, Math.sin(sa) * this.config.bulletSpeed, this.isPlayer1, this.config);
+          nb.owner = this.index;
+          bullets.push(nb);
         }
         muzzleFlash(muzzleX, muzzleY, this.angle);
 
@@ -452,7 +466,7 @@ gun_<!DOCTYPE html>
         if (!this.alive) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.strokeStyle = this.isPlayer1 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
+        ctx.strokeStyle = AIM_COLORS[this.index];
         ctx.lineWidth = 1.2;
         ctx.setLineDash([3, 3]);
         ctx.beginPath(); ctx.moveTo(0, 0);
@@ -462,7 +476,7 @@ gun_<!DOCTYPE html>
 
         ctx.rotate(this.angle);
         ctx.scale(GUN_SCALE, GUN_SCALE);
-        ctx.fillStyle = this.isPlayer1 ? '#f59e0b' : '#ef4444';
+        ctx.fillStyle = GUN_COLORS[this.index];
         ctx.fillRect(-8, -5, 26, 10);
         ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
         ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
@@ -487,16 +501,19 @@ gun_<!DOCTYPE html>
     }
 
     // ---------- AI ----------
-    function updateAI(dt) {
-      if (!player2 || !player2.alive || !player1 || !player1.alive) return;
-      const targetAngle = Math.atan2(player1.y - player2.y, player1.x - player2.x);
-      let angleDiff = Math.abs(player2.angle - targetAngle);
+    function updateAI(dt, bot = player2, foes = [player1]) {
+      if (!bot || !bot.alive) return;
+      const alive = foes.filter(f => f && f.alive);
+      if (!alive.length) return;
+      const t = alive.reduce((a, b) => Math.hypot(a.x - bot.x, a.y - bot.y) < Math.hypot(b.x - bot.x, b.y - bot.y) ? a : b);
+      const targetAngle = Math.atan2(t.y - bot.y, t.x - bot.x);
+      let angleDiff = Math.abs(bot.angle - targetAngle);
       while (angleDiff > Math.PI * 2) angleDiff -= Math.PI * 2;
       if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
       const threshold = aiDifficulty === 'pro' ? 0.45 : (aiDifficulty === 'normal' ? 0.35 : 0.25);
       const hitChance = aiDifficulty === 'pro' ? 0.9 : (aiDifficulty === 'normal' ? 0.7 : 0.45);
-      if (angleDiff < threshold && player2.cooldown <= 0 && !player2.reloading) {
-        if (Math.random() < hitChance) player2.shoot();
+      if (angleDiff < threshold && bot.cooldown <= 0 && !bot.reloading) {
+        if (Math.random() < hitChance) bot.shoot();
       }
     }
 
@@ -510,7 +527,11 @@ gun_<!DOCTYPE html>
     }
 
     // ---------- Game flow ----------
-    let netP1Weapon = 'revolver', netP2Weapon = 'revolver';
+    let netP1Weapon = 'revolver', netP2Weapon = 'revolver', netP3Weapon = 'revolver';
+    let netFFA = false, mySlot = 1, slotConn = [null, null, null], netWeapons = ['revolver', 'revolver', 'revolver'];
+    function isFFA() { return gameMode === 'ffa' || ((gameMode === 'online-host' || gameMode === 'online-guest') && netFFA); }
+    function isBotSlot(i) { return gameMode === 'ffa' || (netFFA && !slotConn[i]); }
+    function nameOf(i) { return i > 0 && isBotSlot(i) ? PLAYER_NAMES[i] : 'Player ' + (i + 1); }
 
     function startGame(mode) {
       AudioEngine.init();
@@ -532,12 +553,15 @@ gun_<!DOCTYPE html>
 
       player1 = new PhysicsGun(100, 200, p1Config, true);
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
+      player3 = isFFA() ? new PhysicsGun(W / 2, 450, isNet ? WEAPONS[netP3Weapon] : WEAPONS['revolver'], false, 2) : null;
+      if (player3) { player3.angle = -Math.PI / 2; player3.spinSpeed = 1.5; }
+      document.getElementById('p3-hud').style.display = isFFA() ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false;
+      koActive = false; gameEnding = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
-      document.getElementById('p2-gun-name').innerText = mode === 'ai' ? 'BOT' : p2Config.name.substring(0, 4);
+      document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa') ? 'BOT' : p2Config.name.substring(0, 4);
 
       // Which fire buttons are usable on THIS device
       const p1Btn = document.getElementById('p1-touch-btn');
@@ -546,12 +570,12 @@ gun_<!DOCTYPE html>
       const p2On = mode === 'pvp' || mode === 'online-guest';
       p1Btn.classList.toggle('opacity-40', !p1On); p1Btn.classList.toggle('pointer-events-none', !p1On);
       p2Btn.classList.toggle('opacity-40', !p2On); p2Btn.classList.toggle('pointer-events-none', !p2On);
-      if (mode === 'online-guest') p2Btn.innerHTML = '🔥 TAP TO FIRE (YOU = P2)';
+      if (mode === 'online-guest') p2Btn.innerHTML = '🔥 TAP TO FIRE (YOU = P' + (mySlot + 1) + ')';
       else p2Btn.innerHTML = 'TAP P2 FIRE <span class="text-sm">🔥</span>';
       if (mode === 'online-host') p1Btn.innerHTML = '<span class="text-sm">🔥</span> TAP TO FIRE (YOU = P1)';
       else p1Btn.innerHTML = '<span class="text-sm">🔥</span> TAP P1 FIRE';
 
-      if (mode === 'online-host') netSend({ t: 'start', p1: netP1Weapon, p2: netP2Weapon });
+      if (mode === 'online-host') sendStart();
 
       const wasRunning = isRunning;
       isRunning = true;
@@ -562,6 +586,7 @@ gun_<!DOCTYPE html>
     }
 
     function resetGame() {
+      if (netFFA && netRole === 'host') refreshWeapons();
       if (gameMode === 'online-guest') {
         netSend({ t: 'rematch' });
         document.getElementById('winner-text').innerText = 'WAITING FOR HOST...';
@@ -577,7 +602,7 @@ gun_<!DOCTYPE html>
     }
 
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
-    let koActive = false, koX = 0, koY = 0, koStart = 0;
+    let koActive = false, koX = 0, koY = 0, koStart = 0, gameEnding = false;
     function startKO(x, y) {
       koActive = true; koX = x; koY = y; koStart = performance.now();
       for (let i = 0; i < 40; i++) {
@@ -589,6 +614,8 @@ gun_<!DOCTYPE html>
     }
 
     function triggerVictory(winnerName, loser) {
+      if (gameEnding) return;
+      gameEnding = true;
       timeScale = 0.2;
       if (loser) startKO(loser.x, loser.y);
       setTimeout(() => {
@@ -605,11 +632,15 @@ gun_<!DOCTYPE html>
         player1.reloading ? 'RELOAD' : `${player1.ammo}/${player1.config.maxAmmo}`,
         player2.reloading ? 'RELOAD' : `${player2.ammo}/${player2.config.maxAmmo}`];
       const ids = ['p1-hp-fill', 'p2-hp-fill', 'p1-ammo-text', 'p2-ammo-text'];
+      if (player3) {
+        v.push(Math.max(0, Math.ceil(player3.hp)) + '%', player3.reloading ? 'RELOAD' : `${player3.ammo}/${player3.config.maxAmmo}`);
+        ids.push('p3-hp-fill', 'p3-ammo-text');
+      }
       v.forEach((val, i) => {
         if (hudCache[i] === val) return;
         hudCache[i] = val;
         const el = document.getElementById(ids[i]);
-        if (i < 2) el.style.width = val; else el.innerText = val;
+        if (ids[i].endsWith('fill')) el.style.width = val; else el.innerText = val;
       });
     }
 
@@ -707,7 +738,44 @@ gun_<!DOCTYPE html>
       }
     }
 
-    function netSend(m) { if (conn && conn.open) { try { conn.send(m); } catch (e) {} } }
+    function netSend(m) {
+      if (netFFA && netRole === 'host') { slotConn.forEach(c => { if (c && c.open) { try { c.send(m); } catch (e) {} } }); return; }
+      if (conn && conn.open) { try { conn.send(m); } catch (e) {} }
+    }
+
+    // ---- 3-player online (host = P1, guests = P2 / P3, empty seats = bots) ----
+    function updateLobby() {
+      const n = slotConn.filter(Boolean).length;
+      netStatus('Players: ' + (n + 1) + '/3. Share the invite, then tap START. Empty seats become bots.');
+    }
+    function refreshWeapons() {
+      netP1Weapon = selectedWeaponType;
+      netP2Weapon = slotConn[1] ? netWeapons[1] : 'revolver';
+      netP3Weapon = slotConn[2] ? netWeapons[2] : 'revolver';
+    }
+    function startFFA() {
+      if (!netFFA || netRole !== 'host') return;
+      refreshWeapons();
+      startGame('online-host');
+    }
+    function sendStart() {
+      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, ffa: netFFA ? 1 : 0 };
+      if (netFFA) slotConn.forEach((c, i) => { if (c && c.open) { try { c.send({ ...base, slot: i }); } catch (e) {} } });
+      else netSend(base);
+    }
+    function addGuest(c) {
+      const slot = [1, 2].find(i => !slotConn[i]);
+      if (!slot || isRunning) { c.close(); return; }
+      slotConn[slot] = c;
+      c.on('data', (m) => {
+        if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; updateLobby(); }
+        else if (m.t === 'fire') { const g = slot === 1 ? player2 : player3; if (gameMode === 'online-host' && g) g.shoot(); }
+        else if (m.t === 'rematch' && gameMode === 'online-host' && !isRunning) resetGame();
+      });
+      const gone = () => { if (slotConn[slot] === c) { slotConn[slot] = null; if (!isRunning) updateLobby(); } };
+      c.on('close', gone); c.on('error', gone);
+      updateLobby();
+    }
     function netStatus(t) { document.getElementById('net-status').innerText = t; }
 
     function showOnline(show) {
@@ -718,22 +786,24 @@ gun_<!DOCTYPE html>
     function cleanupNet() {
       if (conn) { try { conn.close(); } catch (e) {} }
       if (peer) { try { peer.destroy(); } catch (e) {} }
-      conn = null; peer = null; netRole = null;
+      conn = null; peer = null; netRole = null; netFFA = false; slotConn = [null, null, null];
+      document.getElementById('start-btn').style.display = 'none';
       document.getElementById('room-code').innerText = '----';
       document.getElementById('share-btn').style.display = 'none';
       netStatus('');
     }
 
-    async function hostGame() {
+    async function hostGame(ffa = false) {
       cleanupNet();
-      netRole = 'host';
+      netRole = 'host'; netFFA = !!ffa;
       const code = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 4).toUpperCase().padEnd(4, 'X');
       netStatus('Creating room...');
       peer = new Peer('pduel-' + code, { config: { iceServers: await getIce() } });
       peer.on('open', () => {
         document.getElementById('room-code').innerText = code;
         document.getElementById('share-btn').style.display = 'flex';
-        netStatus('Tap SHARE or COPY and send the invite to your friend. Waiting...');
+        document.getElementById('start-btn').style.display = netFFA ? 'inline-block' : 'none';
+        if (netFFA) updateLobby(); else netStatus('Tap SHARE or COPY and send the invite to your friend. Waiting...');
         keepAwake();
       });
       // If the phone switches apps (e.g. to WhatsApp), the link to the matchmaking server can drop.
@@ -743,6 +813,7 @@ gun_<!DOCTYPE html>
       });
       peer.on('error', (e) => netStatus(e.type === 'unavailable-id' ? 'Code taken, tap HOST again' : 'Error: ' + e.type));
       peer.on('connection', (c) => {
+        if (netFFA) { addGuest(c); return; }
         if (conn && conn.open) { c.close(); return; }
         conn = c;
         setupConn();
@@ -791,7 +862,7 @@ gun_<!DOCTYPE html>
           break;
         case 'start': // guest: host started a round
           if (netRole !== 'guest') return;
-          netP1Weapon = m.p1; netP2Weapon = m.p2;
+          netP1Weapon = m.p1; netP2Weapon = m.p2; netP3Weapon = m.p3 || 'revolver'; netFFA = !!m.ffa; mySlot = m.slot || 1;
           startGame('online-guest');
           break;
         case 's':
@@ -814,7 +885,7 @@ gun_<!DOCTYPE html>
       const g = p => [Math.round(p.x), Math.round(p.y), Math.round(p.vx), Math.round(p.vy), +p.angle.toFixed(3), +p.spinSpeed.toFixed(2),
                       Math.round(p.hp), p.ammo, p.reloading ? 1 : 0, +p.reloadTimer.toFixed(2), p.alive ? 1 : 0];
       return {
-        t: 's', n: ++snapSeq, ts: timeScale, p1: g(player1), p2: g(player2),
+        t: 's', n: ++snapSeq, ts: timeScale, p1: g(player1), p2: g(player2), p3: player3 ? g(player3) : null, end: gameEnding ? 1 : 0,
         b: bullets.filter(b => b.active).map(b => [b.id || (b.id = ++bulletIdSeq), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.isPlayer1 ? 1 : 0, b.config.name.toLowerCase()]),
         c: arenaPickups.filter(c => c.active).map(c => [Math.round(c.x), Math.round(c.y), c.type])
       };
@@ -824,9 +895,9 @@ gun_<!DOCTYPE html>
     function applySnapshot(s) {
       if (!player1 || !player2) return;
       timeScale = s.ts || 1;
-      [[player1, s.p1], [player2, s.p2]].forEach(([p, a]) => {
+      [[player1, s.p1], [player2, s.p2], ...(s.p3 && player3 ? [[player3, s.p3]] : [])].forEach(([p, a]) => {
         const [x, y, vx, vy, ang, sp, hp, ammo, rl, rt, al] = a;
-        if (p.alive && !al) startKO(x, y);
+        if (p.alive && !al) { startKO(x, y); if (s.p3 && !s.end) koActive = false; }
         if (ammo < p.ammo) {
           AudioEngine.playShoot(p.config.name.toLowerCase());
           screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
@@ -865,7 +936,7 @@ gun_<!DOCTYPE html>
     // Guest: smooth motion between snapshots (no real physics)
     function guestStep(dt) {
       const k = 1 - Math.exp(-dt * 14); // how fast we blend toward the host's position
-      [player1, player2].forEach(p => {
+      [player1, player2, player3].filter(Boolean).forEach(p => {
         if (!p.alive) return;
         p.x += p.vx * dt; p.y += p.vy * dt; p.angle += p.spinSpeed * dt;
         if (p.tx !== undefined) {
@@ -911,7 +982,12 @@ gun_<!DOCTYPE html>
       } else {
         player1.update(dt);
         player2.update(dt);
+        if (player3) player3.update(dt);
         if (gameMode === 'ai') updateAI(dt);
+        if (isFFA()) {
+          if (isBotSlot(1)) updateAI(dt, player2, [player1, player3]);
+          if (isBotSlot(2)) updateAI(dt, player3, [player1, player2]);
+        }
       }
 
       bouncePads.forEach(pad => pad.update(dt));
@@ -932,21 +1008,36 @@ gun_<!DOCTYPE html>
 
       // Hit detection (host / offline only; guest just displays what host says)
       if (gameMode !== 'online-guest') {
+        const ffa = isFFA();
+        const all = ffa ? [player1, player2, player3] : [player1, player2];
         bullets.forEach(b => {
           if (!b.active) return;
-          const target = b.isPlayer1 ? player2 : player1;
-          if (target.alive && Math.hypot(b.x - target.x, b.y - target.y) < target.radius + b.radius) {
-            b.active = false;
-            target.hp -= b.config.damage;
-            AudioEngine.playHit();
-            createSparks(b.x, b.y, b.config.color);
-            target.vx += b.vx * 0.2; target.vy += b.vy * 0.2;
-            target.spinSpeed += (Math.random() - 0.5) * 16;
-            combatTexts.push(new FloatingText(target.x, target.y - 12, `-${b.config.damage}`, '#ef4444'));
-            updateHUD();
-            if (target.hp <= 0 && target.alive) {
-              target.alive = false;
-              triggerVictory(b.isPlayer1 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
+          const owner = b.owner !== undefined ? b.owner : (b.isPlayer1 ? 0 : 1);
+          for (const target of all) {
+            if (target.index === owner || !target.alive) continue;
+            if (Math.hypot(b.x - target.x, b.y - target.y) < target.radius + b.radius) {
+              b.active = false;
+              target.hp -= b.config.damage;
+              AudioEngine.playHit();
+              createSparks(b.x, b.y, b.config.color);
+              target.vx += b.vx * 0.2; target.vy += b.vy * 0.2;
+              target.spinSpeed += (Math.random() - 0.5) * 16;
+              combatTexts.push(new FloatingText(target.x, target.y - 12, `-${b.config.damage}`, '#ef4444'));
+              updateHUD();
+              if (target.hp <= 0) {
+                target.alive = false;
+                if (!ffa) {
+                  triggerVictory(owner === 0 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
+                } else {
+                  const left = all.filter(p => p.alive).sort((a, c) => c.hp - a.hp);
+                  if (left.length <= 1 || (!player1.alive && gameMode === 'ffa')) {
+                    triggerVictory(nameOf(left.length ? left[0].index : owner), target);
+                  } else {
+                    startKO(target.x, target.y); koActive = false; // explosion + shake, but no zoom
+                  }
+                }
+              }
+              break;
             }
           }
         });
@@ -984,6 +1075,7 @@ gun_<!DOCTYPE html>
       bullets.forEach(b => b.draw());
       player1.draw();
       player2.draw();
+      if (player3) player3.draw();
       combatTexts.forEach(t => t.draw());
 
       ctx.restore();
