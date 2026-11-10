@@ -152,7 +152,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '9';
+    const APP_VERSION = '10';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -205,8 +205,8 @@
       smg: { name:'SMG', damage:14, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
       sniper: { name:'SNIPER', damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
       plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
-      sword: { name:'SWORD', damage:50, recoilForce:350, torqueKick:6, spinBase:2.2, mass:1.0, cooldown:0.5, maxAmmo:8, reloadTime:1.2, bulletSpeed:700, spread:0, pellets:1, range:150, bulletRadius:13, blade:true, color:'#e2e8f0', spec:'SWORD (SHORT RANGE, HEAVY HIT)' },
-      shield: { name:'SHIELD', damage:12, recoilForce:250, torqueKick:4, spinBase:1.3, mass:1.6, cooldown:0.3, maxAmmo:10, reloadTime:1.4, bulletSpeed:800, spread:0.04, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LOW DAMAGE)' }
+      sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:64, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
+      shield: { name:'SHIELD', damage:12, recoilForce:250, torqueKick:4, spinBase:1.3, mass:1.6, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, REVOLVER SPEED)' }
     };
 
     // ---------- Audio ----------
@@ -375,7 +375,7 @@
         this.config = config; this.isPlayer1 = isPlayer1; this.index = idx;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
-        this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
+        this.bladeCD = [0, 0, 0, 0]; this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
         this.cooldown = 0; this.reloading = false; this.reloadTimer = 0;
         this.alive = true; this.radius = 18 * GUN_SCALE;
       }
@@ -384,6 +384,7 @@
         if (!this.alive) return;
         this.angle += this.spinSpeed * dt;
         this.spinSpeed *= Math.exp(-0.4 * dt);
+        if (this.config.melee && Math.abs(this.spinSpeed) < 3) this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * 3; // blade keeps sweeping
 
         this.vy += 420 * dt;
         this.vx *= Math.exp(-0.75 * dt);
@@ -427,6 +428,7 @@
         });
 
         if (this.cooldown > 0) this.cooldown -= dt;
+        for (let i = 0; i < 4; i++) if (this.bladeCD[i] > 0) this.bladeCD[i] -= dt;
         if (this.reloading) {
           this.reloadTimer -= dt;
           if (this.reloadTimer <= 0) { this.reloading = false; this.ammo = this.config.maxAmmo; }
@@ -436,6 +438,16 @@
       shoot() {
         if (!this.alive || !isRunning) return;
         if (this.reloading || this.cooldown > 0) return;
+
+        if (this.config.melee) { // sword: tap = lunge forward + fast swing, damage comes from the blade touching someone
+          this.cooldown = this.config.cooldown;
+          AudioEngine.tone('sawtooth', 520, 120, 0.12, 0.2);
+          this.vx += Math.cos(this.angle) * this.config.lungeForce;
+          this.vy += Math.sin(this.angle) * this.config.lungeForce;
+          this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * (this.config.torqueKick + 8);
+          screenShakeTime = 0.06; screenShakeForce = 1.5;
+          return;
+        }
 
         if (this.ammo <= 0) {
           this.reloading = true; this.reloadTimer = this.config.reloadTime;
@@ -482,11 +494,20 @@
 
         ctx.rotate(this.angle);
         ctx.scale(GUN_SCALE, GUN_SCALE);
-        ctx.fillStyle = GUN_COLORS[this.index];
-        ctx.fillRect(-8, -5, 26, 10);
-        ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
-        ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
-        if (this.config.blade) { ctx.fillStyle = '#e2e8f0'; ctx.fillRect(22, -3, 38, 6); ctx.fillStyle = '#94a3b8'; ctx.fillRect(18, -8, 5, 16); }
+        if (this.config.melee) { // sword: pommel, grip, crossguard, pointed blade
+          const BL = this.config.bladeLen;
+          ctx.fillStyle = '#334155'; ctx.fillRect(-14, -4, 8, 8);
+          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
+          ctx.fillStyle = '#facc15'; ctx.fillRect(8, -11, 5, 22);
+          ctx.fillStyle = '#e2e8f0'; ctx.beginPath();
+          ctx.moveTo(13, -5); ctx.lineTo(BL, -2); ctx.lineTo(BL + 10, 0); ctx.lineTo(BL, 2); ctx.lineTo(13, 5); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(BL, 0); ctx.stroke();
+        } else {
+          ctx.fillStyle = GUN_COLORS[this.index];
+          ctx.fillRect(-8, -5, 26, 10);
+          ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
+          ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
+        }
         if (this.config.shield) { ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, 30, -1.0, 1.0); ctx.stroke(); }
         ctx.restore();
 
@@ -646,7 +667,7 @@
         if (!p) return;
         const n = i + 1;
         const w = Math.max(0, Math.ceil(p.hp / p.maxHp * 100)) + '%';
-        const a = p.reloading ? 'RELOAD' : `${p.ammo}/${p.config.maxAmmo}`;
+        const a = p.config.melee ? 'BLADE' : p.reloading ? 'RELOAD' : `${p.ammo}/${p.config.maxAmmo}`;
         if (hudCache['w' + n] !== w) { hudCache['w' + n] = w; document.getElementById('p' + n + '-hp-fill').style.width = w; }
         if (hudCache['a' + n] !== a) { hudCache['a' + n] = a; document.getElementById('p' + n + '-ammo-text').innerText = a; }
       });
@@ -977,6 +998,23 @@
       }
     }, 7000);
 
+    function dealDamage(target, owner, dmg, px, py, kx, ky, color) {
+      const ffa = isFFA();
+      target.hp -= dmg;
+      AudioEngine.playHit();
+      createSparks(px, py, color);
+      target.vx += kx; target.vy += ky;
+      target.spinSpeed += (Math.random() - 0.5) * 16;
+      combatTexts.push(new FloatingText(target.x, target.y - 12, `-${dmg}`, '#ef4444'));
+      updateHUD();
+      if (target.hp > 0) return;
+      target.alive = false;
+      if (!ffa) { triggerVictory(owner === 0 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target); return; }
+      const left = [player1, player2, player3, player4].filter(p => p && p.alive).sort((a, c) => c.hp - a.hp);
+      if (left.length <= 1 || (!player1.alive && soloFFA())) triggerVictory(nameOf(left.length ? left[0].index : owner), target);
+      else { startKO(target.x, target.y); koActive = false; } // explosion + shake, no zoom
+    }
+
     // ---------- Main loop ----------
     function gameLoop(timestamp) {
       if (!isRunning) return;
@@ -1018,8 +1056,7 @@
 
       // Hit detection (host / offline only; guest just displays what host says)
       if (gameMode !== 'online-guest') {
-        const ffa = isFFA();
-        const all = ffa ? [player1, player2, player3, player4].filter(Boolean) : [player1, player2];
+        const all = isFFA() ? [player1, player2, player3, player4].filter(Boolean) : [player1, player2];
         bullets.forEach(b => {
           if (!b.active) return;
           const owner = b.owner !== undefined ? b.owner : (b.isPlayer1 ? 0 : 1);
@@ -1027,29 +1064,24 @@
             if (target.index === owner || !target.alive) continue;
             if (Math.hypot(b.x - target.x, b.y - target.y) < target.radius + b.radius) {
               b.active = false;
-              target.hp -= b.config.damage;
-              AudioEngine.playHit();
-              createSparks(b.x, b.y, b.config.color);
-              target.vx += b.vx * 0.2; target.vy += b.vy * 0.2;
-              target.spinSpeed += (Math.random() - 0.5) * 16;
-              combatTexts.push(new FloatingText(target.x, target.y - 12, `-${b.config.damage}`, '#ef4444'));
-              updateHUD();
-              if (target.hp <= 0) {
-                target.alive = false;
-                if (!ffa) {
-                  triggerVictory(owner === 0 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
-                } else {
-                  const left = all.filter(p => p.alive).sort((a, c) => c.hp - a.hp);
-                  if (left.length <= 1 || (!player1.alive && soloFFA())) {
-                    triggerVictory(nameOf(left.length ? left[0].index : owner), target);
-                  } else {
-                    startKO(target.x, target.y); koActive = false; // explosion + shake, but no zoom
-                  }
-                }
-              }
+              dealDamage(target, owner, b.config.damage, b.x, b.y, b.vx * 0.2, b.vy * 0.2, b.config.color);
               break;
             }
           }
+        });
+        // Sword blades hurt whoever they touch (each target at most every 0.5s)
+        all.forEach(a => {
+          if (!a.alive || !a.config.melee) return;
+          const L = (a.config.bladeLen + 8) * GUN_SCALE, vx = Math.cos(a.angle) * L, vy = Math.sin(a.angle) * L;
+          all.forEach(t => {
+            if (t === a || !t.alive || a.bladeCD[t.index] > 0) return;
+            const u = Math.max(0, Math.min(1, ((t.x - a.x) * vx + (t.y - a.y) * vy) / (vx * vx + vy * vy)));
+            const px = a.x + vx * u, py = a.y + vy * u;
+            if (Math.hypot(t.x - px, t.y - py) < t.radius + 4) {
+              a.bladeCD[t.index] = 0.5;
+              dealDamage(t, a.index, a.config.damage, px, py, Math.cos(a.angle) * 350, Math.sin(a.angle) * 350, '#e2e8f0');
+            }
+          });
         });
       }
 
