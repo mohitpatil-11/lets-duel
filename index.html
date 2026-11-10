@@ -158,7 +158,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '19';
+    const APP_VERSION = '21';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -288,17 +288,17 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', muzzle:26, damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
-      shotgun: { name:'SHOTGUN', muzzle:36, damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
-      smg: { name:'SMG', muzzle:28, damage:18, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
-      sniper: { name:'SNIPER', muzzle:48, damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
-      plasma: { name:'PLASMA', muzzle:30, damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
-      sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:90, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
-      shield: { name:'SHIELD', muzzle:28, damage:16, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
-      rocket: { name:'ROCKET', muzzle:46, damage:65, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
-      axe: { name:'AXE', damage:45, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:53, hp:80, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', muzzle:38, damage:33, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.7, maxAmmo:4, reloadTime:1.8, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
-      spear: { name:'SPEAR', damage:30, recoilForce:0, torqueKick:6, spinBase:1.8, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' }
+      revolver: { name:'REVOLVER', muzzle:26, hp:200, damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
+      shotgun: { name:'SHOTGUN', muzzle:36, hp:200, damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
+      smg: { name:'SMG', muzzle:28, hp:200, damage:18, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
+      sniper: { name:'SNIPER', muzzle:48, hp:200, damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
+      plasma: { name:'PLASMA', muzzle:30, hp:200, damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
+      sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:140, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
+      shield: { name:'SHIELD', muzzle:28, damage:16, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:300, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
+      rocket: { name:'ROCKET', muzzle:46, hp:200, damage:65, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
+      axe: { name:'AXE', damage:45, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:53, hp:130, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', muzzle:38, hp:200, damage:33, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.7, maxAmmo:4, reloadTime:1.8, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
+      spear: { name:'SPEAR', damage:25, recoilForce:0, torqueKick:6, spinBase:1.8, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', hp:150, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' }
     };
 
     // ---------- Audio ----------
