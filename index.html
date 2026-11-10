@@ -158,7 +158,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '18';
+    const APP_VERSION = '19';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -185,6 +185,88 @@
     const PLAYER_NAMES = ['Player 1', 'Red Bot', 'Green Bot', 'Blue Bot'];
     const GUN_SCALE = 1.2; // change this number to resize every gun (1.0 = original size)
 
+    // ---------- Weapon artwork (each ranged weapon has its own shape; x = forward, origin = gun centre) ----------
+    const poly = (pts, fill) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); ctx.fill(); };
+    const box = (x, y, w, h, fill) => { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); };
+    const dot = (x, y, r, fill) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); };
+    const GUN_ART = {
+      revolver(c) {
+        poly([[-9, 2], [-3, 2], [-6, 16], [-15, 14]], '#92400e');          // wooden grip
+        box(-10, -5, 12, 10, '#4b5563');                                   // frame
+        box(-3, -7, 12, 13, '#9ca3af');                                    // cylinder
+        [0, 3, 6].forEach(x => box(x, -7, 1.2, 13, '#374151'));            // cylinder flutes
+        box(8, -3, 18, 5, '#6b7280');                                      // barrel
+        box(-13, -8, 4, 4, '#374151');                                     // hammer
+        box(-8, -4, 4, 3, c);                                              // player colour
+      },
+      shotgun(c) {
+        poly([[-8, -4], [-26, -2], [-28, 9], [-9, 6]], '#92400e');         // wooden stock
+        box(-8, -5, 16, 11, '#374151');                                    // receiver
+        box(6, -3, 30, 5, '#6b7280');                                      // long barrel
+        box(6, 2, 26, 2.5, '#4b5563');                                     // magazine tube
+        box(12, 4.5, 14, 5, '#92400e');                                    // pump forearm
+        box(34, -4.5, 2, 8, '#9ca3af');                                    // muzzle ring
+        box(-4, -3, 6, 2, c);
+      },
+      smg(c) {
+        box(-12, -5, 30, 10, '#374151');                                   // boxy receiver
+        box(-12, -8, 28, 3, '#9ca3af');                                    // top rail
+        box(18, -3, 10, 5, '#6b7280');                                     // short barrel
+        box(22, -4.5, 2, 8, '#4b5563');                                    // barrel shroud
+        box(2, 5, 6, 17, '#111827');                                       // long magazine
+        poly([[-10, 5], [-3, 5], [-6, 15], [-13, 14]], '#1f2937');         // pistol grip
+        box(-24, -2, 12, 3, '#6b7280');                                    // wire stock
+        box(-6, -3, 6, 2, c);
+      },
+      sniper(c) {
+        poly([[-12, -4], [-30, -3], [-30, 9], [-14, 6]], '#92400e');       // stock
+        box(-12, -4, 24, 9, '#4b5563');                                    // body
+        box(12, -2, 36, 4, '#374151');                                     // long barrel
+        box(46, -3.5, 5, 7, '#9ca3af');                                    // muzzle brake
+        box(-2, -11, 18, 5, '#111827');                                    // scope tube
+        dot(-2, -8.5, 2.8, '#38bdf8'); dot(16, -8.5, 2.8, '#38bdf8');      // scope lenses
+        box(2, -6, 3, 3, '#374151'); box(10, -6, 3, 3, '#374151');         // scope mounts
+        box(0, 5, 6, 6, '#111827');                                        // magazine
+        box(-8, -3, 6, 2, c);
+      },
+      plasma(c) {
+        const pulse = 0.55 + 0.35 * Math.sin(performance.now() / 120);
+        poly([[-8, 4], [-1, 4], [-4, 15], [-12, 13]], '#312e81');          // grip
+        ctx.fillStyle = '#4c1d95'; ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, 7); ctx.fill();   // body
+        box(10, -7, 18, 3.5, '#7c3aed'); box(10, 3.5, 18, 3.5, '#7c3aed'); // emitter prongs
+        box(-12, -3, 4, 6, '#6d28d9');                                     // rear cap
+        ctx.globalAlpha = pulse; dot(21, 0, 4.5, '#e9d5ff'); dot(0, 0, 4, '#a855f7'); ctx.globalAlpha = 1;   // glowing energy
+        box(-4, -6, 8, 2, c);
+      },
+      shield(c) {
+        poly([[-8, 3], [-1, 3], [-4, 14], [-12, 12]], '#0c4a6e');          // grip
+        box(-10, -5, 24, 10, '#0369a1');                                   // body
+        box(14, -3, 14, 6, '#38bdf8');                                     // barrel
+        box(-6, -7, 14, 3, '#7dd3fc');                                     // top plate
+        box(-4, -3, 6, 2, c);
+      },
+      rocket(c) {
+        box(-20, -7, 56, 14, '#4d5b3a');                                   // olive launch tube
+        box(-24, -9, 5, 18, '#374151');                                    // rear flare
+        box(34, -9, 6, 18, '#374151');                                     // muzzle ring
+        poly([[34, -5], [46, 0], [34, 5]], '#fb923c');                     // rocket nose cone
+        box(-2, 7, 6, 10, '#1f2937');                                      // grip
+        box(8, -12, 8, 5, '#9ca3af');                                      // sight
+        box(14, -7, 4, 14, c);                                             // player band
+      },
+      crossbow(c) {
+        poly([[-14, -3], [18, -2], [18, 2], [-14, 4], [-18, 1]], '#92400e'); // wooden stock
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#a16207'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(22, -22); ctx.quadraticCurveTo(10, 0, 22, 22); ctx.stroke();  // bow limbs
+        ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(22, -22); ctx.lineTo(-4, 0); ctx.lineTo(22, 22); ctx.stroke(); // string
+        ctx.strokeStyle = '#a3e635'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(32, 0); ctx.stroke();                     // bolt
+        ctx.lineCap = 'butt';
+        poly([[32, -3], [38, 0], [32, 3]], '#e2e8f0');                     // bolt head
+        box(-6, 2, 4, 8, '#4b5563');                                       // trigger grip
+        box(2, -4, 5, 2, c);
+      }
+    };
+
     const gridCanvas = document.createElement('canvas');
     gridCanvas.width = W; gridCanvas.height = H;
     (function () {
@@ -206,16 +288,16 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
-      shotgun: { name:'SHOTGUN', damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
-      smg: { name:'SMG', damage:18, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
-      sniper: { name:'SNIPER', damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
-      plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
+      revolver: { name:'REVOLVER', muzzle:26, damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
+      shotgun: { name:'SHOTGUN', muzzle:36, damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
+      smg: { name:'SMG', muzzle:28, damage:18, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
+      sniper: { name:'SNIPER', muzzle:48, damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
+      plasma: { name:'PLASMA', muzzle:30, damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
       sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:90, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
-      shield: { name:'SHIELD', damage:16, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
-      rocket: { name:'ROCKET', damage:65, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
+      shield: { name:'SHIELD', muzzle:28, damage:16, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
+      rocket: { name:'ROCKET', muzzle:46, damage:65, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
       axe: { name:'AXE', damage:45, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:53, hp:80, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', damage:33, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.7, maxAmmo:4, reloadTime:1.8, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
+      crossbow: { name:'CROSSBOW', muzzle:38, damage:33, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.7, maxAmmo:4, reloadTime:1.8, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
       spear: { name:'SPEAR', damage:30, recoilForce:0, torqueKick:6, spinBase:1.8, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' }
     };
 
@@ -480,7 +562,7 @@
         this.vx -= dirX * recoil; this.vy -= dirY * recoil;
         this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * 3);
 
-        const muzzleX = this.x + dirX * 26 * GUN_SCALE, muzzleY = this.y + dirY * 26 * GUN_SCALE;
+        const mz = (this.config.muzzle || 26) * GUN_SCALE; const muzzleX = this.x + dirX * mz, muzzleY = this.y + dirY * mz;
 
         for (let i = 0; i < this.config.pellets; i++) {
           const sa = this.angle + (Math.random() - 0.5) * this.config.spread;
@@ -531,10 +613,7 @@
           ctx.moveTo(13, -5); ctx.lineTo(BL, -2); ctx.lineTo(BL + 10, 0); ctx.lineTo(BL, 2); ctx.lineTo(13, 5); ctx.closePath(); ctx.fill();
           ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(BL, 0); ctx.stroke();
         } else {
-          ctx.fillStyle = GUN_COLORS[this.index];
-          ctx.fillRect(-8, -5, 26, 10);
-          ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
-          ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
+          (GUN_ART[this.config.name.toLowerCase()] || GUN_ART.revolver)(GUN_COLORS[this.index]);
         }
         if (this.config.shield) { ctx.fillStyle = 'rgba(125,211,252,0.18)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.stroke(); ctx.lineCap = 'butt'; }
         ctx.restore();
@@ -963,7 +1042,7 @@
         if (ammo < p.ammo) {
           AudioEngine.playShoot(p.config.name.toLowerCase());
           screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
-          muzzleFlash(p.x + Math.cos(p.angle) * 26 * GUN_SCALE, p.y + Math.sin(p.angle) * 26 * GUN_SCALE, p.angle);
+          muzzleFlash(p.x + Math.cos(p.angle) * (p.config.muzzle || 26) * GUN_SCALE, p.y + Math.sin(p.angle) * (p.config.muzzle || 26) * GUN_SCALE, p.angle);
         }
         if (hp < p.hp) {
           AudioEngine.playHit();
