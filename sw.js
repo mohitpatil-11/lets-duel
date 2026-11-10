@@ -26,11 +26,11 @@ self.addEventListener('fetch', (e) => {
   if (sameOrigin) {
     // Network first: players always get the newest game when online, cached copy when offline
     e.respondWith(
-      fetch(req).then(res => {
+      fetch(req, { cache: 'no-cache' }).then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy));
         return res;
-      }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+      }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('./index.html')))
     );
   } else {
     // Libraries and fonts: cache first
