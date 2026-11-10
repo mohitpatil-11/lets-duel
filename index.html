@@ -93,8 +93,9 @@
           <button onclick="selectWeapon('sword')" id="btn-sword" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SWD</button>
           <button onclick="selectWeapon('shield')" id="btn-shield" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SHD</button>
           <button onclick="selectWeapon('rocket')" id="btn-rocket" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">RKT</button>
-          <button onclick="selectWeapon('burst')" id="btn-burst" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">BRS</button>
           <button onclick="selectWeapon('axe')" id="btn-axe" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">AXE</button>
+          <button onclick="selectWeapon('crossbow')" id="btn-crossbow" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">XBW</button>
+          <button onclick="selectWeapon('spear')" id="btn-spear" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SPR</button>
         </div>
       </div>
 
@@ -157,7 +158,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '16';
+    const APP_VERSION = '18';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -207,14 +208,15 @@
     const WEAPONS = {
       revolver: { name:'REVOLVER', damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
       shotgun: { name:'SHOTGUN', damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
-      smg: { name:'SMG', damage:14, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
+      smg: { name:'SMG', damage:18, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
       sniper: { name:'SNIPER', damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
       plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
-      sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
-      shield: { name:'SHIELD', damage:12, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
+      sword: { name:'SWORD', damage:40, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:90, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
+      shield: { name:'SHIELD', damage:16, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
       rocket: { name:'ROCKET', damage:65, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
-      burst: { name:'BURST', damage:16, recoilForce:420, torqueKick:7, spinBase:1.8, mass:1.0, cooldown:0.5, maxAmmo:9, reloadTime:1.5, bulletSpeed:900, spread:0.1, pellets:3, color:'#f472b6', spec:'BURST (3-SHOT FAN)' },
-      axe: { name:'AXE', damage:45, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:58, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' }
+      axe: { name:'AXE', damage:45, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:53, hp:80, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', damage:33, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.7, maxAmmo:4, reloadTime:1.8, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
+      spear: { name:'SPEAR', damage:30, recoilForce:0, torqueKick:6, spinBase:1.8, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' }
     };
 
     // ---------- Audio ----------
@@ -508,7 +510,12 @@
 
         ctx.rotate(this.angle);
         ctx.scale(GUN_SCALE, GUN_SCALE);
-        if (this.config.melee && this.config.style === 'axe') { // axe: wooden handle + double-bladed head
+        if (this.config.melee && this.config.style === 'spear') { // spear: long shaft + pointed head
+          const BL = this.config.bladeLen;
+          ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2, BL + 2, 4);
+          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
+          ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.moveTo(BL - 8, -6); ctx.lineTo(BL + 14, 0); ctx.lineTo(BL - 8, 6); ctx.closePath(); ctx.fill();
+        } else if (this.config.melee && this.config.style === 'axe') { // axe: wooden handle + double-bladed head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -3, BL + 2, 6);
           ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
@@ -1164,7 +1171,7 @@
 
     // Weapon buttons on the game-over screen
     (function () {
-      const abbr = { revolver: 'REV', shotgun: 'SG', smg: 'SMG', sniper: 'SNP', plasma: 'PLS', sword: 'SWD', shield: 'SHD', rocket: 'RKT', burst: 'BRS', axe: 'AXE' };
+      const abbr = { revolver: 'REV', shotgun: 'SG', smg: 'SMG', sniper: 'SNP', plasma: 'PLS', sword: 'SWD', shield: 'SHD', rocket: 'RKT', axe: 'AXE', crossbow: 'XBW', spear: 'SPR' };
       document.getElementById('go-weapons').innerHTML = Object.keys(WEAPONS).map(k =>
         `<button id="gbtn-${k}" onclick="selectWeapon('${k}')" class="go-wbtn py-2 border rounded-xl text-[10px] font-orbitron font-black active:scale-95 ${k === selectedWeaponType ? 'bg-amber-500/20 border-amber-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'}">${abbr[k] || k.slice(0, 3).toUpperCase()}</button>`
       ).join('');
