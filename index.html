@@ -61,10 +61,9 @@
     </div>
   </div>
 
-  <div id="p3-hud" style="display:none" class="w-full max-w-md items-center gap-2 px-3 py-1 mt-1 bg-slate-900/90 border border-slate-800 rounded-2xl text-[10px] font-orbitron shrink-0">
-    <span class="font-black text-green-400">P3</span>
-    <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden"><div id="p3-hp-fill" class="h-full bg-gradient-to-r from-green-500 to-emerald-300 transition-all duration-150 w-full rounded-full"></div></div>
-    <span id="p3-ammo-text" class="text-green-400 font-black">6/6</span>
+  <div id="p3-hud" style="display:none" class="w-full max-w-md items-center gap-3 px-3 py-1 mt-1 bg-slate-900/90 border border-slate-800 rounded-2xl text-[10px] font-orbitron shrink-0">
+    <div class="flex items-center gap-1 flex-1"><span class="font-black text-green-400">P3</span><div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden"><div id="p3-hp-fill" class="h-full bg-gradient-to-r from-green-500 to-emerald-300 transition-all duration-150 w-full rounded-full"></div></div><span id="p3-ammo-text" class="text-green-400 font-black">6/6</span></div>
+    <div id="p4-half" style="display:none" class="items-center gap-1 flex-1"><span class="font-black text-sky-400">P4</span><div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden"><div id="p4-hp-fill" class="h-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-150 w-full rounded-full"></div></div><span id="p4-ammo-text" class="text-sky-400 font-black">6/6</span></div>
   </div>
 
   <!-- Canvas wrapper -->
@@ -85,12 +84,14 @@
           <span>SELECT WEAPON:</span>
           <span id="weapon-spec" class="text-slate-400 text-[9px]">REVOLVER (BALANCED)</span>
         </div>
-        <div class="grid grid-cols-5 gap-1">
+        <div class="grid grid-cols-4 gap-1">
           <button onclick="selectWeapon('revolver')" id="btn-revolver" class="weapon-btn py-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-[10px] font-orbitron font-black text-white active:scale-95 transition-all">REV</button>
           <button onclick="selectWeapon('shotgun')" id="btn-shotgun" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SG</button>
           <button onclick="selectWeapon('smg')" id="btn-smg" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SMG</button>
           <button onclick="selectWeapon('sniper')" id="btn-sniper" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SNP</button>
           <button onclick="selectWeapon('plasma')" id="btn-plasma" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">PLS</button>
+          <button onclick="selectWeapon('sword')" id="btn-sword" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SWD</button>
+          <button onclick="selectWeapon('shield')" id="btn-shield" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SHD</button>
         </div>
       </div>
 
@@ -108,6 +109,7 @@
         <button onclick="startGame('pvp')" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">2 PLAYERS (LOCAL DUEL)</button>
         <button onclick="showOnline(true)" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🌐 2 PLAYERS (ONLINE)</button>
         <button onclick="startGame('ffa')" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🔺 FREE FOR ALL (PvPvP)</button>
+        <button onclick="startGame('ffa4')" class="w-full py-3.5 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🔷 FREE FOR ALL (PvPvPvP)</button>
       </div>
     </div>
 
@@ -117,6 +119,7 @@
       <p class="text-[10px] font-orbitron text-slate-400 text-center tracking-wide">PICK YOUR WEAPON ON THE MAIN MENU FIRST</p>
       <button onclick="hostGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">HOST 2-PLAYER</button>
       <button onclick="hostGame(true)" class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">🔺 HOST 3-PLAYER (FFA)</button>
+      <button onclick="hostGame(4)" class="w-full py-3 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 font-orbitron font-black rounded-2xl active:scale-95 transition-all text-sm tracking-wider">🔷 HOST 4-PLAYER (FFA)</button>
       <button id="start-btn" style="display:none" onclick="startFFA()" class="py-2 px-6 bg-green-500 text-slate-950 font-orbitron font-black rounded-xl active:scale-95 text-xs">▶ START MATCH</button>
       <div id="room-code" class="font-orbitron text-4xl font-black text-white tracking-[0.3em] h-10">----</div>
       <div id="share-btn" style="display:none" class="gap-2">
@@ -149,7 +152,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '7';
+    const APP_VERSION = '9';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -171,10 +174,10 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
-    const GUN_COLORS = ['#f59e0b', '#ef4444', '#22c55e'];
-    const AIM_COLORS = ['rgba(245,158,11,0.35)', 'rgba(239,68,68,0.35)', 'rgba(34,197,94,0.35)'];
-    const PLAYER_NAMES = ['Player 1', 'Red Bot', 'Green Bot'];
-    const GUN_SCALE = 1.4; // change this number to resize every gun (1.0 = original size)
+    const GUN_COLORS = ['#f59e0b', '#ef4444', '#22c55e', '#38bdf8'];
+    const AIM_COLORS = ['rgba(245,158,11,0.35)', 'rgba(239,68,68,0.35)', 'rgba(34,197,94,0.35)', 'rgba(56,189,248,0.35)'];
+    const PLAYER_NAMES = ['Player 1', 'Red Bot', 'Green Bot', 'Blue Bot'];
+    const GUN_SCALE = 1.2; // change this number to resize every gun (1.0 = original size)
 
     const gridCanvas = document.createElement('canvas');
     gridCanvas.width = W; gridCanvas.height = H;
@@ -194,14 +197,16 @@
     let screenShakeTime = 0, screenShakeForce = 0;
 
     let bullets = [], particles = [], combatTexts = [], arenaPickups = [], bouncePads = [], obstacles = [];
-    let player1, player2, player3 = null;
+    let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
       revolver: { name:'REVOLVER', damage:30, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
       shotgun: { name:'SHOTGUN', damage:14, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
       smg: { name:'SMG', damage:14, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
       sniper: { name:'SNIPER', damage:60, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
-      plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' }
+      plasma: { name:'PLASMA', damage:40, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
+      sword: { name:'SWORD', damage:50, recoilForce:350, torqueKick:6, spinBase:2.2, mass:1.0, cooldown:0.5, maxAmmo:8, reloadTime:1.2, bulletSpeed:700, spread:0, pellets:1, range:150, bulletRadius:13, blade:true, color:'#e2e8f0', spec:'SWORD (SHORT RANGE, HEAVY HIT)' },
+      shield: { name:'SHIELD', damage:12, recoilForce:250, torqueKick:4, spinBase:1.3, mass:1.6, cooldown:0.3, maxAmmo:10, reloadTime:1.4, bulletSpeed:800, spread:0.04, pellets:1, hp:160, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LOW DAMAGE)' }
     };
 
     // ---------- Audio ----------
@@ -284,13 +289,14 @@
       constructor(x, y, vx, vy, isPlayer1, config) {
         this.x = x; this.y = y; this.vx = vx; this.vy = vy;
         this.isPlayer1 = isPlayer1; this.config = config;
-        this.radius = config.pellets > 1 ? 3 : 4;
+        this.radius = config.bulletRadius || (config.pellets > 1 ? 3 : 4); this.travel = 0;
         this.active = true; this.trail = [];
       }
       update(dt) {
         this.trail.push({ x: this.x, y: this.y });
         if (this.trail.length > 5) this.trail.shift();
         this.x += this.vx * dt; this.y += this.vy * dt;
+        if (this.config.range) { this.travel += Math.hypot(this.vx, this.vy) * dt; if (this.travel > this.config.range) { this.active = false; return; } }
         if (this.x < 10 || this.x > W - 10 || this.y < 10 || this.y > H - 10) {
           this.active = false;
           createSparks(this.x, this.y, '#cbd5e1');
@@ -369,7 +375,7 @@
         this.config = config; this.isPlayer1 = isPlayer1; this.index = idx;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
-        this.hp = 100; this.ammo = config.maxAmmo;
+        this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
         this.cooldown = 0; this.reloading = false; this.reloadTimer = 0;
         this.alive = true; this.radius = 18 * GUN_SCALE;
       }
@@ -411,7 +417,7 @@
             crate.active = false;
             AudioEngine.playPickup();
             if (crate.type === 'health') {
-              this.hp = Math.min(100, this.hp + 30);
+              this.hp = Math.min(this.maxHp, this.hp + 30);
               combatTexts.push(new FloatingText(this.x, this.y - 18, '+30 HP', '#10b981'));
             } else {
               this.ammo = this.config.maxAmmo; this.reloading = false;
@@ -480,6 +486,8 @@
         ctx.fillRect(-8, -5, 26, 10);
         ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, -3, 18, 6);
         ctx.fillStyle = '#334155'; ctx.fillRect(-5, 3, 10, 13);
+        if (this.config.blade) { ctx.fillStyle = '#e2e8f0'; ctx.fillRect(22, -3, 38, 6); ctx.fillStyle = '#94a3b8'; ctx.fillRect(18, -8, 5, 16); }
+        if (this.config.shield) { ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, 30, -1.0, 1.0); ctx.stroke(); }
         ctx.restore();
 
         if (this.reloading) {
@@ -527,10 +535,12 @@
     }
 
     // ---------- Game flow ----------
-    let netP1Weapon = 'revolver', netP2Weapon = 'revolver', netP3Weapon = 'revolver';
-    let netFFA = false, mySlot = 1, slotConn = [null, null, null], netWeapons = ['revolver', 'revolver', 'revolver'];
-    function isFFA() { return gameMode === 'ffa' || ((gameMode === 'online-host' || gameMode === 'online-guest') && netFFA); }
-    function isBotSlot(i) { return gameMode === 'ffa' || (netFFA && !slotConn[i]); }
+    let netP1Weapon = 'revolver', netP2Weapon = 'revolver', netP3Weapon = 'revolver', netP4Weapon = 'revolver';
+    let netFFA = 0, mySlot = 1, slotConn = [null, null, null, null], netWeapons = ['revolver', 'revolver', 'revolver', 'revolver'];
+    function soloFFA() { return gameMode === 'ffa' || gameMode === 'ffa4'; }
+    function ffaN() { return gameMode === 'ffa' ? 3 : gameMode === 'ffa4' ? 4 : ((gameMode === 'online-host' || gameMode === 'online-guest') ? netFFA : 0); }
+    function isFFA() { return ffaN() > 0; }
+    function isBotSlot(i) { return soloFFA() || (netFFA && !slotConn[i]); }
     function nameOf(i) { return i > 0 && isBotSlot(i) ? PLAYER_NAMES[i] : 'Player ' + (i + 1); }
 
     function startGame(mode) {
@@ -553,15 +563,19 @@
 
       player1 = new PhysicsGun(100, 200, p1Config, true);
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
-      player3 = isFFA() ? new PhysicsGun(W / 2, 450, isNet ? WEAPONS[netP3Weapon] : WEAPONS['revolver'], false, 2) : null;
+      const n = ffaN();
+      player3 = n >= 3 ? new PhysicsGun(n === 4 ? 100 : W / 2, 450, isNet ? WEAPONS[netP3Weapon] : WEAPONS['revolver'], false, 2) : null;
+      player4 = n >= 4 ? new PhysicsGun(W - 100, 450, isNet ? WEAPONS[netP4Weapon] : WEAPONS['revolver'], false, 3) : null;
       if (player3) { player3.angle = -Math.PI / 2; player3.spinSpeed = 1.5; }
-      document.getElementById('p3-hud').style.display = isFFA() ? 'flex' : 'none';
+      if (player4) { player4.angle = -Math.PI / 2; player4.spinSpeed = -1.5; }
+      document.getElementById('p3-hud').style.display = n >= 3 ? 'flex' : 'none';
+      document.getElementById('p4-half').style.display = n >= 4 ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
       koActive = false; gameEnding = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
-      document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa') ? 'BOT' : p2Config.name.substring(0, 4);
+      document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa' || mode === 'ffa4') ? 'BOT' : p2Config.name.substring(0, 4);
 
       // Which fire buttons are usable on THIS device
       const p1Btn = document.getElementById('p1-touch-btn');
@@ -625,22 +639,16 @@
       }, 1800);
     }
 
-    const hudCache = [];
+    const hudCache = {};
     function updateHUD() {
       if (!player1 || !player2) return;
-      const v = [Math.max(0, Math.ceil(player1.hp)) + '%', Math.max(0, Math.ceil(player2.hp)) + '%',
-        player1.reloading ? 'RELOAD' : `${player1.ammo}/${player1.config.maxAmmo}`,
-        player2.reloading ? 'RELOAD' : `${player2.ammo}/${player2.config.maxAmmo}`];
-      const ids = ['p1-hp-fill', 'p2-hp-fill', 'p1-ammo-text', 'p2-ammo-text'];
-      if (player3) {
-        v.push(Math.max(0, Math.ceil(player3.hp)) + '%', player3.reloading ? 'RELOAD' : `${player3.ammo}/${player3.config.maxAmmo}`);
-        ids.push('p3-hp-fill', 'p3-ammo-text');
-      }
-      v.forEach((val, i) => {
-        if (hudCache[i] === val) return;
-        hudCache[i] = val;
-        const el = document.getElementById(ids[i]);
-        if (ids[i].endsWith('fill')) el.style.width = val; else el.innerText = val;
+      [player1, player2, player3, player4].forEach((p, i) => {
+        if (!p) return;
+        const n = i + 1;
+        const w = Math.max(0, Math.ceil(p.hp / p.maxHp * 100)) + '%';
+        const a = p.reloading ? 'RELOAD' : `${p.ammo}/${p.config.maxAmmo}`;
+        if (hudCache['w' + n] !== w) { hudCache['w' + n] = w; document.getElementById('p' + n + '-hp-fill').style.width = w; }
+        if (hudCache['a' + n] !== a) { hudCache['a' + n] = a; document.getElementById('p' + n + '-ammo-text').innerText = a; }
       });
     }
 
@@ -746,12 +754,13 @@
     // ---- 3-player online (host = P1, guests = P2 / P3, empty seats = bots) ----
     function updateLobby() {
       const n = slotConn.filter(Boolean).length;
-      netStatus('Players: ' + (n + 1) + '/3. Share the invite, then tap START. Empty seats become bots.');
+      netStatus('Players: ' + (n + 1) + '/' + netFFA + '. Share the invite, then tap START. Empty seats become bots.');
     }
     function refreshWeapons() {
       netP1Weapon = selectedWeaponType;
       netP2Weapon = slotConn[1] ? netWeapons[1] : 'revolver';
       netP3Weapon = slotConn[2] ? netWeapons[2] : 'revolver';
+      netP4Weapon = slotConn[3] ? netWeapons[3] : 'revolver';
     }
     function startFFA() {
       if (!netFFA || netRole !== 'host') return;
@@ -759,17 +768,17 @@
       startGame('online-host');
     }
     function sendStart() {
-      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, ffa: netFFA ? 1 : 0 };
+      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA };
       if (netFFA) slotConn.forEach((c, i) => { if (c && c.open) { try { c.send({ ...base, slot: i }); } catch (e) {} } });
       else netSend(base);
     }
     function addGuest(c) {
-      const slot = [1, 2].find(i => !slotConn[i]);
+      const slot = [1, 2, 3].find(i => i < netFFA && !slotConn[i]);
       if (!slot || isRunning) { c.close(); return; }
       slotConn[slot] = c;
       c.on('data', (m) => {
         if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; updateLobby(); }
-        else if (m.t === 'fire') { const g = slot === 1 ? player2 : player3; if (gameMode === 'online-host' && g) g.shoot(); }
+        else if (m.t === 'fire') { const g = [player1, player2, player3, player4][slot]; if (gameMode === 'online-host' && g) g.shoot(); }
         else if (m.t === 'rematch' && gameMode === 'online-host' && !isRunning) resetGame();
       });
       const gone = () => { if (slotConn[slot] === c) { slotConn[slot] = null; if (!isRunning) updateLobby(); } };
@@ -786,7 +795,7 @@
     function cleanupNet() {
       if (conn) { try { conn.close(); } catch (e) {} }
       if (peer) { try { peer.destroy(); } catch (e) {} }
-      conn = null; peer = null; netRole = null; netFFA = false; slotConn = [null, null, null];
+      conn = null; peer = null; netRole = null; netFFA = 0; slotConn = [null, null, null, null];
       document.getElementById('start-btn').style.display = 'none';
       document.getElementById('room-code').innerText = '----';
       document.getElementById('share-btn').style.display = 'none';
@@ -795,7 +804,7 @@
 
     async function hostGame(ffa = false) {
       cleanupNet();
-      netRole = 'host'; netFFA = !!ffa;
+      netRole = 'host'; netFFA = ffa === 4 ? 4 : (ffa ? 3 : 0);
       const code = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 4).toUpperCase().padEnd(4, 'X');
       netStatus('Creating room...');
       peer = new Peer('pduel-' + code, { config: { iceServers: await getIce() } });
@@ -862,7 +871,7 @@
           break;
         case 'start': // guest: host started a round
           if (netRole !== 'guest') return;
-          netP1Weapon = m.p1; netP2Weapon = m.p2; netP3Weapon = m.p3 || 'revolver'; netFFA = !!m.ffa; mySlot = m.slot || 1;
+          netP1Weapon = m.p1; netP2Weapon = m.p2; netP3Weapon = m.p3 || 'revolver'; netP4Weapon = m.p4 || 'revolver'; netFFA = m.ffa | 0; mySlot = m.slot || 1;
           startGame('online-guest');
           break;
         case 's':
@@ -885,7 +894,7 @@
       const g = p => [Math.round(p.x), Math.round(p.y), Math.round(p.vx), Math.round(p.vy), +p.angle.toFixed(3), +p.spinSpeed.toFixed(2),
                       Math.round(p.hp), p.ammo, p.reloading ? 1 : 0, +p.reloadTimer.toFixed(2), p.alive ? 1 : 0];
       return {
-        t: 's', n: ++snapSeq, ts: timeScale, p1: g(player1), p2: g(player2), p3: player3 ? g(player3) : null, end: gameEnding ? 1 : 0,
+        t: 's', n: ++snapSeq, ts: timeScale, p1: g(player1), p2: g(player2), p3: player3 ? g(player3) : null, p4: player4 ? g(player4) : null, end: gameEnding ? 1 : 0,
         b: bullets.filter(b => b.active).map(b => [b.id || (b.id = ++bulletIdSeq), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.isPlayer1 ? 1 : 0, b.config.name.toLowerCase()]),
         c: arenaPickups.filter(c => c.active).map(c => [Math.round(c.x), Math.round(c.y), c.type])
       };
@@ -895,7 +904,7 @@
     function applySnapshot(s) {
       if (!player1 || !player2) return;
       timeScale = s.ts || 1;
-      [[player1, s.p1], [player2, s.p2], ...(s.p3 && player3 ? [[player3, s.p3]] : [])].forEach(([p, a]) => {
+      [[player1, s.p1], [player2, s.p2], ...(s.p3 && player3 ? [[player3, s.p3]] : []), ...(s.p4 && player4 ? [[player4, s.p4]] : [])].forEach(([p, a]) => {
         const [x, y, vx, vy, ang, sp, hp, ammo, rl, rt, al] = a;
         if (p.alive && !al) { startKO(x, y); if (s.p3 && !s.end) koActive = false; }
         if (ammo < p.ammo) {
@@ -936,7 +945,7 @@
     // Guest: smooth motion between snapshots (no real physics)
     function guestStep(dt) {
       const k = 1 - Math.exp(-dt * 14); // how fast we blend toward the host's position
-      [player1, player2, player3].filter(Boolean).forEach(p => {
+      [player1, player2, player3, player4].filter(Boolean).forEach(p => {
         if (!p.alive) return;
         p.x += p.vx * dt; p.y += p.vy * dt; p.angle += p.spinSpeed * dt;
         if (p.tx !== undefined) {
@@ -983,10 +992,11 @@
         player1.update(dt);
         player2.update(dt);
         if (player3) player3.update(dt);
+        if (player4) player4.update(dt);
         if (gameMode === 'ai') updateAI(dt);
         if (isFFA()) {
-          if (isBotSlot(1)) updateAI(dt, player2, [player1, player3]);
-          if (isBotSlot(2)) updateAI(dt, player3, [player1, player2]);
+          const all4 = [player1, player2, player3, player4];
+          [1, 2, 3].forEach(i => { const b = all4[i]; if (b && isBotSlot(i)) updateAI(dt, b, all4.filter(x => x !== b)); });
         }
       }
 
@@ -1009,7 +1019,7 @@
       // Hit detection (host / offline only; guest just displays what host says)
       if (gameMode !== 'online-guest') {
         const ffa = isFFA();
-        const all = ffa ? [player1, player2, player3] : [player1, player2];
+        const all = ffa ? [player1, player2, player3, player4].filter(Boolean) : [player1, player2];
         bullets.forEach(b => {
           if (!b.active) return;
           const owner = b.owner !== undefined ? b.owner : (b.isPlayer1 ? 0 : 1);
@@ -1030,7 +1040,7 @@
                   triggerVictory(owner === 0 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target);
                 } else {
                   const left = all.filter(p => p.alive).sort((a, c) => c.hp - a.hp);
-                  if (left.length <= 1 || (!player1.alive && gameMode === 'ffa')) {
+                  if (left.length <= 1 || (!player1.alive && soloFFA())) {
                     triggerVictory(nameOf(left.length ? left[0].index : owner), target);
                   } else {
                     startKO(target.x, target.y); koActive = false; // explosion + shake, but no zoom
@@ -1076,6 +1086,7 @@
       player1.draw();
       player2.draw();
       if (player3) player3.draw();
+      if (player4) player4.draw();
       combatTexts.forEach(t => t.draw());
 
       ctx.restore();
