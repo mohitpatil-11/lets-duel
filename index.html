@@ -26,6 +26,14 @@
     body { font-family:'Inter',sans-serif; }
     .font-orbitron { font-family:'Orbitron',sans-serif; }
     .glow-title { text-shadow:0 0 20px rgba(245,158,11,.6),0 0 35px rgba(239,68,68,.4); }
+    .gbox{border:1.5px solid var(--gc);border-radius:14px;padding:4px 6px 6px;background:rgba(255,255,255,.03);box-shadow:0 0 10px rgba(255,255,255,.04)}
+    .gtitle{font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;letter-spacing:.14em;color:var(--gc);margin-bottom:3px}
+    .ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+    .wbtn{padding:7px 1px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#cbd5e1;font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden}
+    .wbtn.wc{padding:5px 1px;font-size:8px}
+    .wbtn:active{transform:scale(.95)}
+    .wbtn.sel{border:2px solid var(--gc);background:rgba(255,255,255,.16);background:color-mix(in srgb, var(--gc) 28%, #0f172a);color:#fff}
+    #gameover-overlay > * { flex-shrink: 0; }
     .pulse-btn { animation:pulseGlow 1.8s infinite alternate; }
     @keyframes pulseGlow { 0%{box-shadow:0 0 12px rgba(245,158,11,.4);} 100%{box-shadow:0 0 25px rgba(245,158,11,.8);} }
   </style>
@@ -84,19 +92,7 @@
           <span>SELECT WEAPON:</span>
           <span id="weapon-spec" class="text-slate-400 text-[9px]">REVOLVER (BALANCED)</span>
         </div>
-        <div class="grid grid-cols-4 gap-1">
-          <button onclick="selectWeapon('revolver')" id="btn-revolver" class="weapon-btn py-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-[10px] font-orbitron font-black text-white active:scale-95 transition-all">REV</button>
-          <button onclick="selectWeapon('shotgun')" id="btn-shotgun" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SG</button>
-          <button onclick="selectWeapon('smg')" id="btn-smg" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SMG</button>
-          <button onclick="selectWeapon('sniper')" id="btn-sniper" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SNP</button>
-          <button onclick="selectWeapon('plasma')" id="btn-plasma" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">PLS</button>
-          <button onclick="selectWeapon('sword')" id="btn-sword" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SWD</button>
-          <button onclick="selectWeapon('shield')" id="btn-shield" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SHD</button>
-          <button onclick="selectWeapon('rocket')" id="btn-rocket" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">RKT</button>
-          <button onclick="selectWeapon('axe')" id="btn-axe" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">AXE</button>
-          <button onclick="selectWeapon('crossbow')" id="btn-crossbow" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">XBW</button>
-          <button onclick="selectWeapon('spear')" id="btn-spear" class="weapon-btn py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-black text-slate-400 active:scale-95 transition-all">SPR</button>
-        </div>
+        <div id="weapon-grid" class="flex flex-col gap-1.5"></div>
       </div>
 
       <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-inner">
@@ -140,13 +136,15 @@
     </div>
 
     <!-- Gameover -->
-    <div id="gameover-overlay" style="visibility:hidden" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-20 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="gameover-overlay" style="visibility:hidden" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center p-4 z-20 overflow-y-auto opacity-0 pointer-events-none transition-opacity duration-300">
+      <div class="flex-1"></div>
       <h2 id="winner-text" class="font-orbitron text-3xl font-black mb-1 text-center tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent glow-title">PLAYER 1 WINS!</h2>
       <p class="text-slate-400 text-[10px] mb-6 font-orbitron tracking-widest uppercase">TOUCH BELOW TO REMATCH</p>
       <p class="text-slate-400 text-[10px] mb-1 font-orbitron tracking-widest uppercase">CHANGE WEAPON</p>
-      <div id="go-weapons" class="grid grid-cols-4 gap-1 w-full mb-4"></div>
+      <div id="go-weapons" class="w-full mb-3 flex flex-col gap-1"></div>
       <button onclick="resetGame()" class="py-3 px-8 bg-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">PLAY AGAIN</button>
       <button onclick="location.reload()" class="mt-3 py-2 px-6 bg-slate-800 border border-slate-700 text-slate-300 font-orbitron font-bold rounded-xl text-xs active:scale-95">MENU</button>
+      <div class="flex-1"></div>
     </div>
   </div>
 
@@ -158,7 +156,7 @@
 
   <script>
     // ---- App version: change this number every time you push an update ----
-    const APP_VERSION = '23';
+    const APP_VERSION = '33';
     document.getElementById('app-version').innerText = 'v' + APP_VERSION;
 
     // ---- PWA: offline support + install button ----
@@ -254,6 +252,50 @@
         box(8, -12, 8, 5, '#9ca3af');                                      // sight
         box(14, -7, 4, 14, c);                                             // player band
       },
+      boomerang(c) {
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#a16207'; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(24, -20); ctx.lineTo(0, 0); ctx.lineTo(24, 20); ctx.stroke();
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(24, -20); ctx.lineTo(0, 0); ctx.lineTo(24, 20); ctx.stroke();
+        ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+        box(-12, -3, 12, 6, '#7c2d12');                                    // grip
+        box(-6, -2, 4, 4, c);
+      },
+      flamethrower(c) {
+        ctx.fillStyle = '#b91c1c'; ctx.beginPath(); ctx.ellipse(-14, 0, 11, 8, 0, 0, 7); ctx.fill();   // fuel tank
+        box(-20, -2, 12, 4, '#fca5a5');                                    // tank highlight
+        box(-4, -4, 22, 8, '#4b5563');                                     // body
+        box(-2, 4, 6, 10, '#1f2937');                                      // grip
+        box(18, -3, 18, 6, '#6b7280');                                     // nozzle
+        box(32, -5, 4, 10, '#374151');                                     // nozzle tip
+        ctx.globalAlpha = 0.6 + 0.3 * Math.sin(performance.now() / 70); dot(38, 0, 3.5, '#fb923c'); dot(38, 0, 1.8, '#fde047'); ctx.globalAlpha = 1;   // pilot flame
+        box(4, -3, 5, 2, c);
+      },
+      tesla(c) {
+        const pulse = 0.5 + 0.4 * Math.sin(performance.now() / 80);
+        poly([[-8, 4], [-1, 4], [-4, 15], [-12, 13]], '#1e293b');          // grip
+        box(-12, -5, 20, 10, '#334155');                                   // body
+        ctx.strokeStyle = '#b45309'; ctx.lineWidth = 2.5;                  // copper coil windings
+        for (let x = 8; x < 28; x += 5) { ctx.beginPath(); ctx.moveTo(x, -7); ctx.lineTo(x + 3, 7); ctx.stroke(); }
+        box(26, -2, 8, 4, '#94a3b8');                                      // tip
+        ctx.globalAlpha = pulse; dot(36, 0, 5, '#67e8f9'); dot(36, 0, 2.5, '#ffffff'); ctx.globalAlpha = 1;   // electric spark
+        box(-6, -3, 6, 2, c);
+      },
+      cryo(c) {
+        poly([[-8, 3], [-1, 3], [-4, 14], [-12, 12]], '#0c4a6e');          // grip
+        box(-12, -6, 22, 12, '#0e7490');                                   // body
+        box(10, -4, 18, 8, '#a5f3fc');                                     // ice barrel
+        poly([[28, -4], [34, 0], [28, 4]], '#e0f2fe');                     // crystal tip
+        poly([[4, -6], [8, -13], [12, -6]], '#e0f2fe'); poly([[-4, -6], [-1, -11], [2, -6]], '#bae6fd');   // ice shards
+        box(-6, -3, 6, 2, c);
+      },
+      slingshot(c) {
+        ctx.strokeStyle = '#92400e'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(-8, 8); ctx.lineTo(0, 0); ctx.moveTo(0, 0); ctx.lineTo(18, -12); ctx.moveTo(0, 0); ctx.lineTo(18, 12); ctx.stroke();   // wooden Y-fork
+        ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(18, -12); ctx.lineTo(8, 0); ctx.lineTo(18, 12); ctx.stroke();      // rubber band
+        ctx.lineCap = 'butt';
+        dot(8, 0, 3, '#78716c');                                           // stone
+        box(-2, -2, 4, 3, c);
+      },
       crossbow(c) {
         poly([[-14, -3], [18, -2], [18, 2], [-14, 4], [-18, 1]], '#92400e'); // wooden stock
         ctx.lineCap = 'round';
@@ -288,17 +330,24 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', muzzle:26, hp:110, damage:49, recoilForce:520, torqueKick:8, spinBase:1.5, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (BALANCED)' },
-      shotgun: { name:'SHOTGUN', muzzle:36, hp:110, damage:15, recoilForce:820, torqueKick:12, spinBase:1.7, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (HEAVY KICK)' },
-      smg: { name:'SMG', muzzle:28, hp:110, damage:33, recoilForce:300, torqueKick:5, spinBase:2.0, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID BURST)' },
-      sniper: { name:'SNIPER', muzzle:48, hp:200, damage:44, recoilForce:1000, torqueKick:15, spinBase:1.2, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'HEAVY SNIPER (HIGH DAMAGE)' },
-      plasma: { name:'PLASMA', muzzle:30, hp:200, damage:32, recoilForce:650, torqueKick:9, spinBase:1.6, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY BLAST)' },
-      sword: { name:'SWORD', damage:36, recoilForce:0, torqueKick:6, spinBase:2.4, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:150, lungeForce:650, color:'#e2e8f0', spec:'SWORD (MELEE BLADE, NO SHOTS)' },
-      shield: { name:'SHIELD', muzzle:28, damage:27, recoilForce:450, torqueKick:6, spinBase:2.0, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:300, shield:true, color:'#38bdf8', spec:'SHIELD (160 HP, LIGHT + FAST)' },
-      rocket: { name:'ROCKET', knock:0.4, muzzle:46, hp:200, damage:51, recoilForce:900, torqueKick:12, spinBase:1.2, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (BIG HIT, SLOW RELOAD)' },
-      axe: { name:'AXE', damage:28, recoilForce:0, torqueKick:6, spinBase:2.0, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:53, hp:150, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', muzzle:38, hp:150, damage:76, recoilForce:350, torqueKick:6, spinBase:1.4, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (SLOW, ACCURATE)' },
-      spear: { name:'SPEAR', damage:29, recoilForce:0, torqueKick:6, spinBase:1.8, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', hp:150, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' }
+      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:160, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
+      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:160, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
+      smg: { name:'SMG', grade:3, muzzle:28, hp:160, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
+      sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:250, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
+      plasma: { name:'PLASMA', grade:1, ignoreShield:true, burn:1.5, muzzle:30, hp:250, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: IGNORES SHIELDS, BURNS)' },
+      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:200, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
+      shield: { name:'SHIELD', grade:1, muzzle:28, damage:16, recoilForce:450, torqueKick:3.967, spinBase:1, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:350, shield:true, color:'#38bdf8', spec:'SHIELD (BLOCKS SHOTS AND BLADES FROM THE FRONT)' },
+      rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:250, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
+      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:44, hp:200, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:200, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
+      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', hp:200, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
+      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:290, damage:30, recoilForce:200, torqueKick:3.967, spinBase:1, mass:1.0, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
+      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:290, damage:7, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
+      vampire: { name:'VAMPIRE', grade:0, hp:290, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
+      tesla: { name:'TESLA', grade:0, muzzle:34, hp:290, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
+      cryo: { name:'CRYO', grade:1, muzzle:32, hp:250, slow:2, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
+      hammer: { name:'HAMMER', grade:2, hp:200, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
+      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:160, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:8, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
 
@@ -338,21 +387,8 @@
 
     function selectWeapon(type) {
       selectedWeaponType = type;
-      document.querySelectorAll('.weapon-btn').forEach(btn => {
-        btn.classList.remove('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-white');
-        btn.classList.add('bg-slate-800', 'border', 'border-slate-700', 'text-slate-400');
-      });
-      const a = document.getElementById(`btn-${type}`);
-      if (a) {
-        a.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
-        a.classList.add('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-white');
-      }
+      document.querySelectorAll('.wbtn').forEach(b => b.classList.toggle('sel', b.dataset.w === type));
       document.getElementById('weapon-spec').innerText = WEAPONS[type].spec;
-      document.querySelectorAll('.go-wbtn').forEach(b => {
-        const on = b.id === 'gbtn-' + type;
-        b.classList.toggle('bg-amber-500/20', on); b.classList.toggle('border-amber-500', on); b.classList.toggle('text-white', on);
-        b.classList.toggle('bg-slate-800', !on); b.classList.toggle('border-slate-700', !on); b.classList.toggle('text-slate-400', !on);
-      });
       if (netRole === 'guest') netSend({ t: 'weapon', w: type });
     }
 
@@ -389,17 +425,33 @@
         this.x = x; this.y = y; this.vx = vx; this.vy = vy;
         this.isPlayer1 = isPlayer1; this.config = config;
         this.radius = config.bulletRadius || (config.pellets > 1 ? 3 : 4); this.travel = 0;
-        this.active = true; this.trail = [];
+        this.active = true; this.trail = []; this.hitSet = new Set(); this.returning = false;
       }
       update(dt) {
         this.trail.push({ x: this.x, y: this.y });
         this.px = this.x; this.py = this.y;
         if (this.trail.length > 5) this.trail.shift();
         this.x += this.vx * dt; this.y += this.vy * dt;
-        if (this.config.range) { this.travel += Math.hypot(this.vx, this.vy) * dt; if (this.travel > this.config.range) { this.active = false; return; } }
+        this.travel += Math.hypot(this.vx, this.vy) * dt;
+        if (this.config.range && this.travel > this.config.range) { this.active = false; return; }
+        if (this.config.turn && this.owner !== undefined) {   // boomerang: fly out, then come back to its owner
+          if (!this.returning && this.travel > this.config.turn) { this.returning = true; this.hitSet.clear(); }
+          if (this.returning) {
+            const o = gunByIndex(this.owner);
+            if (!o || !o.alive || this.travel > this.config.turn * 3) { this.active = false; return; }
+            const dx = o.x - this.x, dy = o.y - this.y, d = Math.hypot(dx, dy);
+            if (d < 26) { this.active = false; return; }
+            this.vx = dx / d * this.config.bulletSpeed; this.vy = dy / d * this.config.bulletSpeed;
+          }
+        }
         if (this.x < 10 || this.x > W - 10 || this.y < 10 || this.y > H - 10) {
-          this.active = false;
-          createSparks(this.x, this.y, '#cbd5e1');
+          if (this.config.turn && this.owner !== undefined && !this.returning) {
+            this.returning = true; this.hitSet.clear();
+            this.x = Math.max(10, Math.min(W - 10, this.x)); this.y = Math.max(10, Math.min(H - 10, this.y));
+          } else {
+            this.active = false;
+            createSparks(this.x, this.y, '#cbd5e1');
+          }
         }
       }
       draw() {
@@ -475,7 +527,7 @@
         this.config = config; this.isPlayer1 = isPlayer1; this.index = idx;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
-        this.bladeCD = [0, 0, 0, 0]; this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
+        this.bladeCD = [0, 0, 0, 0]; this.burnT = 0; this.burnAcc = 0; this.slowT = 0; this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
         this.cooldown = 0; this.reloading = false; this.reloadTimer = 0;
         this.alive = true; this.radius = 18 * GUN_SCALE;
       }
@@ -484,7 +536,8 @@
         if (!this.alive) return;
         this.angle += this.spinSpeed * dt;
         this.spinSpeed *= Math.exp(-0.4 * dt);
-        if (this.config.melee && Math.abs(this.spinSpeed) < 3) this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * 3; // blade keeps sweeping
+        const minSpin = this.config.melee ? 1.5 : (this.config.minSpin || 0.75);   // never stop turning (a gun stuck pointing down could never aim)
+        if (Math.abs(this.spinSpeed) < minSpin) this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * minSpin;
 
         this.vy += 420 * dt;
         this.vx *= Math.exp(-0.75 * dt);
@@ -534,7 +587,8 @@
           }
         });
 
-        if (this.cooldown > 0) this.cooldown -= dt;
+        if (this.slowT > 0) { this.slowT -= dt; this.vx *= Math.exp(-2.5 * dt); this.vy *= Math.exp(-2.5 * dt); }   // frozen: sluggish
+        if (this.cooldown > 0) this.cooldown -= dt * (this.slowT > 0 ? 0.5 : 1);
         for (let i = 0; i < 4; i++) if (this.bladeCD[i] > 0) this.bladeCD[i] -= dt;
         if (this.reloading) {
           this.reloadTimer -= dt;
@@ -551,7 +605,7 @@
           AudioEngine.tone('sawtooth', 520, 120, 0.12, 0.2);
           this.vx += Math.cos(this.angle) * this.config.lungeForce;
           this.vy += Math.sin(this.angle) * this.config.lungeForce;
-          this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * (this.config.torqueKick + 8);
+          this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * (this.config.torqueKick + 5.3);
           screenShakeTime = 0.06; screenShakeForce = 1.5;
           return;
         }
@@ -569,7 +623,7 @@
         const dirX = Math.cos(this.angle), dirY = Math.sin(this.angle);
         const recoil = this.config.recoilForce / this.config.mass;
         this.vx -= dirX * recoil; this.vy -= dirY * recoil;
-        this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * 3);
+        this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * (this.config.steady ? 0.26 : 1.98));
 
         const mz = (this.config.muzzle || 26) * GUN_SCALE; const muzzleX = this.x + dirX * mz, muzzleY = this.y + dirY * mz;
 
@@ -601,7 +655,21 @@
 
         ctx.rotate(this.angle);
         ctx.scale(GUN_SCALE, GUN_SCALE);
-        if (this.config.melee && this.config.style === 'spear') { // spear: long shaft + pointed head
+        if (this.config.melee && this.config.style === 'hammer') { // war hammer: long handle + heavy square head
+          const BL = this.config.bladeLen;
+          ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2.5, BL + 4, 5);
+          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 14, 6);
+          ctx.fillStyle = '#94a3b8'; ctx.fillRect(BL - 8, -13, 16, 26);
+          ctx.fillStyle = '#cbd5e1'; ctx.fillRect(BL - 8, -13, 16, 5);
+          ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5; ctx.strokeRect(BL - 8, -13, 16, 26);
+        } else if (this.config.melee && this.config.style === 'vampire') { // vampire blade: bat-wing guard + curved crimson blade
+          const BL = this.config.bladeLen;
+          ctx.fillStyle = '#1f2937'; ctx.fillRect(-14, -3, 12, 6);
+          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -2, 6, 4);
+          poly([[6, -13], [14, -7], [10, 0], [14, 7], [6, 13], [8, 0]], '#7f1d1d');
+          ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.moveTo(10, -3); ctx.quadraticCurveTo(BL * 0.6, -12, BL + 8, 0); ctx.quadraticCurveTo(BL * 0.6, 4, 10, 3); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#fecaca'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(10, -3); ctx.quadraticCurveTo(BL * 0.6, -12, BL + 8, 0); ctx.stroke();
+        } else if (this.config.melee && this.config.style === 'spear') { // spear: long shaft + pointed head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2, BL + 2, 4);
           ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
@@ -657,8 +725,11 @@
       if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
       const threshold = aiDifficulty === 'pro' ? 0.45 : (aiDifficulty === 'normal' ? 0.35 : 0.25);
       const hitChance = aiDifficulty === 'pro' ? 0.9 : (aiDifficulty === 'normal' ? 0.7 : 0.45);
+      bot.idleT = (bot.idleT || 0) + dt;
       if (angleDiff < threshold && bot.cooldown <= 0 && !bot.reloading) {
-        if (Math.random() < hitChance) bot.shoot();
+        if (Math.random() < hitChance) { bot.shoot(); bot.idleT = 0; }
+      } else if (bot.idleT > 1.6 && bot.cooldown <= 0 && !bot.reloading) {   // fire anyway to turn / move instead of freezing
+        bot.shoot(); bot.idleT = 0;
       }
     }
 
@@ -696,20 +767,20 @@
       setupEnvironment();
 
       const p1Config = isNet ? WEAPONS[netP1Weapon] : WEAPONS[selectedWeaponType];
-      const p2Config = isNet ? WEAPONS[netP2Weapon] : (mode === 'pvp' ? WEAPONS[selectedWeaponType] : WEAPONS['revolver']);
+      const p2Config = isNet ? WEAPONS[netP2Weapon] : (mode === 'pvp' ? WEAPONS[selectedWeaponType] : WEAPONS[randWeapon()]);
 
       player1 = new PhysicsGun(100, 200, p1Config, true);
       player2 = new PhysicsGun(W - 100, 200, p2Config, false);
       const n = ffaN();
-      player3 = n >= 3 ? new PhysicsGun(n === 4 ? 100 : W / 2, 450, isNet ? WEAPONS[netP3Weapon] : WEAPONS['revolver'], false, 2) : null;
-      player4 = n >= 4 ? new PhysicsGun(W - 100, 450, isNet ? WEAPONS[netP4Weapon] : WEAPONS['revolver'], false, 3) : null;
+      player3 = n >= 3 ? new PhysicsGun(n === 4 ? 100 : W / 2, 450, isNet ? WEAPONS[netP3Weapon] : WEAPONS[randWeapon()], false, 2) : null;
+      player4 = n >= 4 ? new PhysicsGun(W - 100, 450, isNet ? WEAPONS[netP4Weapon] : WEAPONS[randWeapon()], false, 3) : null;
       if (player3) { player3.angle = -Math.PI / 2; player3.spinSpeed = 1.5; }
       if (player4) { player4.angle = -Math.PI / 2; player4.spinSpeed = -1.5; }
       document.getElementById('p3-hud').style.display = n >= 3 ? 'flex' : 'none';
       document.getElementById('p4-half').style.display = n >= 4 ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false; gameEnding = false;
+      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa' || mode === 'ffa4') ? 'BOT' : p2Config.name.substring(0, 4);
@@ -753,7 +824,7 @@
     }
 
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
-    let koActive = false, koX = 0, koY = 0, koStart = 0, gameEnding = false;
+    let koActive = false, koX = 0, koY = 0, koStart = 0, gameEnding = false, matchTime = 0, suddenShown = false;
     function startKO(x, y) {
       koActive = true; koX = x; koY = y; koStart = performance.now();
       for (let i = 0; i < 40; i++) {
@@ -895,9 +966,9 @@
     }
     function refreshWeapons() {
       netP1Weapon = selectedWeaponType;
-      netP2Weapon = slotConn[1] ? netWeapons[1] : 'revolver';
-      netP3Weapon = slotConn[2] ? netWeapons[2] : 'revolver';
-      netP4Weapon = slotConn[3] ? netWeapons[3] : 'revolver';
+      netP2Weapon = slotConn[1] ? netWeapons[1] : randWeapon();
+      netP3Weapon = slotConn[2] ? netWeapons[2] : randWeapon();
+      netP4Weapon = slotConn[3] ? netWeapons[3] : randWeapon();
     }
     function startFFA() {
       if (!netFFA || netRole !== 'host') return;
@@ -1118,6 +1189,14 @@
       }
     }, 7000);
 
+    function randWeapon() { const k = Object.keys(WEAPONS); return k[Math.floor(Math.random() * k.length)]; }
+    function gunByIndex(i) { return [player1, player2, player3, player4][i]; }
+    function bulletDamage(b) {   // sniper hits harder from far away, shotgun pellets weaken with distance
+      const c = b.config; let m = 1;
+      if (c.longshot) m = 0.7 + Math.min(0.9, b.travel / 600);
+      else if (c.falloff) m = Math.max(0.45, 1.35 - b.travel / 260);
+      return Math.round(c.damage * m);
+    }
     function segDist(px, py, x1, y1, x2, y2) {
       const vx = x2 - x1, vy = y2 - y1, L = vx * vx + vy * vy;
       let u = L ? ((px - x1) * vx + (py - y1) * vy) / L : 0;
@@ -1128,6 +1207,12 @@
     function dealDamage(target, owner, dmg, px, py, kx, ky, color) {
       const ffa = isFFA();
       target.hp -= dmg;
+      const att = gunByIndex(owner);
+      if (att && att !== target && att.alive && att.config.lifesteal) {   // vampire blade heals
+        const heal = Math.round(dmg * att.config.lifesteal);
+        att.hp = Math.min(att.maxHp, att.hp + heal);
+        combatTexts.push(new FloatingText(att.x, att.y - 14, '+' + heal, '#4ade80'));
+      }
       AudioEngine.playHit();
       createSparks(px, py, color);
       target.vx += kx; target.vy += ky;
@@ -1187,16 +1272,65 @@
         const all = isFFA() ? [player1, player2, player3, player4].filter(Boolean) : [player1, player2];
         bullets.forEach(b => {
           if (!b.active) return;
+          const c = b.config;
           const owner = b.owner !== undefined ? b.owner : (b.isPlayer1 ? 0 : 1);
+          const bx0 = b.px === undefined ? b.x : b.px, by0 = b.py === undefined ? b.y : b.py;
           for (const target of all) {
             if (target.index === owner || !target.alive) continue;
-            if (segDist(target.x, target.y, b.px === undefined ? b.x : b.px, b.py === undefined ? b.y : b.py, b.x, b.y) < target.radius + b.radius) {
-              b.active = false;
-              const kb = b.config.knock || 0.2;
-              dealDamage(target, owner, b.config.damage, b.x, b.y, b.vx * kb, b.vy * kb, b.config.color);
-              break;
+            if (c.turn && b.hitSet.has(target.index)) continue;
+            if (segDist(target.x, target.y, bx0, by0, b.x, b.y) >= target.radius + b.radius) continue;
+            // Shield: blocks shots from the front arc (armor-piercing and energy shots ignore it)
+            if (target.config.shield && !c.ignoreShield) {
+              let d = Math.atan2(by0 - target.y, bx0 - target.x) - target.angle;
+              d -= Math.PI * 2 * Math.round(d / (Math.PI * 2));
+              if (Math.abs(d) < 1.15) {
+                if (c.turn) b.hitSet.add(target.index); else b.active = false;
+                createSparks(b.x, b.y, '#bae6fd');
+                combatTexts.push(new FloatingText(target.x, target.y - 14, 'BLOCKED', '#7dd3fc'));
+                AudioEngine.tone('square', 900, 400, 0.08, 0.15);
+                break;
+              }
             }
+            if (c.turn) b.hitSet.add(target.index); else b.active = false;
+            const kb = c.knock || 0.2;
+            dealDamage(target, owner, bulletDamage(b), b.x, b.y, b.vx * kb, b.vy * kb, c.color);
+            if (c.burn && target.alive) { target.burnT = c.burn; target.burnOwner = owner; }
+            if (c.slow && target.alive) { target.slowT = c.slow; combatTexts.push(new FloatingText(target.x, target.y - 18, 'FROZEN', '#a5f3fc')); }
+            if (c.chain) {   // lightning jumps to the nearest other enemy
+              let best = null, bd = c.chain;
+              all.forEach(o => { if (o === target || o.index === owner || !o.alive) return; const dd = Math.hypot(o.x - target.x, o.y - target.y); if (dd < bd) { bd = dd; best = o; } });
+              if (best) {
+                for (let i = 0; i <= 8; i++) particles.push(new Particle(target.x + (best.x - target.x) * i / 8 + (Math.random() - 0.5) * 8, target.y + (best.y - target.y) * i / 8 + (Math.random() - 0.5) * 8, 0, 0, '#67e8f9', 0.25));
+                dealDamage(best, owner, Math.round(bulletDamage(b) * 0.6), best.x, best.y, 0, 0, '#67e8f9');
+              }
+            }
+            if (c.splash) {   // explosion: nearby enemies take reduced damage
+              createSparks(b.x, b.y, '#fb923c'); createSparks(b.x, b.y, '#fde047');
+              all.forEach(o => {
+                if (o === target || o.index === owner || !o.alive) return;
+                const dd = Math.hypot(o.x - b.x, o.y - b.y);
+                if (dd < c.splash) dealDamage(o, owner, Math.round(c.damage * 0.6 * (1 - dd / c.splash * 0.5)), b.x, b.y, (o.x - b.x) / (dd || 1) * 250, (o.y - b.y) / (dd || 1) * 250, '#fb923c');
+              });
+            }
+            break;
           }
+        });
+        matchTime += dt;
+        if (matchTime > 75 && !gameEnding) {   // sudden death: everyone slowly loses health, so a match always ends
+          if (!suddenShown) { suddenShown = true; combatTexts.push(new FloatingText(W / 2, H / 2, 'SUDDEN DEATH', '#ef4444')); }
+          const rate = 2 + (matchTime - 75) * 0.25;
+          all.forEach(t => {
+            if (!t.alive || gameEnding) return;
+            t.sdAcc = (t.sdAcc || 0) + rate * dt;
+            if (t.sdAcc >= 3) { t.sdAcc -= 3; dealDamage(t, t.index === 0 ? 1 : 0, 3, t.x, t.y, 0, 0, '#ef4444'); }
+          });
+        }
+        // Burning: damage over time
+        all.forEach(t => {
+          if (!t.alive || !(t.burnT > 0)) return;
+          t.burnT -= dt; t.burnAcc += 8 * dt;
+          if (Math.random() < 0.3) particles.push(new Particle(t.x + (Math.random() - 0.5) * 16, t.y - 6, 0, -50, '#fb923c', 0.3));
+          if (t.burnAcc >= 4) { t.burnAcc -= 4; dealDamage(t, t.burnOwner, 4, t.x, t.y, 0, 0, '#fb923c'); }
         });
         // Sword blades hurt whoever they touch (each target at most every 0.5s)
         all.forEach(a => {
@@ -1208,7 +1342,19 @@
             const px = a.x + vx * u, py = a.y + vy * u;
             if (Math.hypot(t.x - px, t.y - py) < t.radius + (a.config.bladeWidth || 4)) {
               a.bladeCD[t.index] = 0.5;
-              dealDamage(t, a.index, a.config.damage, px, py, Math.cos(a.angle) * 350, Math.sin(a.angle) * 350, '#e2e8f0');
+              if (t.config.shield) {   // a blade that hits the shield side is blocked
+                let d = Math.atan2(py - t.y, px - t.x) - t.angle;
+                d -= Math.PI * 2 * Math.round(d / (Math.PI * 2));
+                if (Math.abs(d) < 1.15) {
+                  createSparks(px, py, '#bae6fd');
+                  combatTexts.push(new FloatingText(t.x, t.y - 14, 'BLOCKED', '#7dd3fc'));
+                  AudioEngine.tone('square', 900, 400, 0.08, 0.15);
+                  a.vx -= Math.cos(a.angle) * 300; a.vy -= Math.sin(a.angle) * 300;   // attacker is pushed back
+                  return;
+                }
+              }
+              const kn = a.config.knockBlade || 350;
+              dealDamage(t, a.index, a.config.damage, px, py, Math.cos(a.angle) * kn, Math.sin(a.angle) * kn, '#e2e8f0');
             }
           });
         });
@@ -1266,13 +1412,25 @@
       if (isRunning) requestAnimationFrame(gameLoop);
     }
 
-    // Weapon buttons on the game-over screen
-    (function () {
-      const abbr = { revolver: 'REV', shotgun: 'SG', smg: 'SMG', sniper: 'SNP', plasma: 'PLS', sword: 'SWD', shield: 'SHD', rocket: 'RKT', axe: 'AXE', crossbow: 'XBW', spear: 'SPR' };
-      document.getElementById('go-weapons').innerHTML = Object.keys(WEAPONS).map(k =>
-        `<button id="gbtn-${k}" onclick="selectWeapon('${k}')" class="go-wbtn py-2 border rounded-xl text-[10px] font-orbitron font-black active:scale-95 ${k === selectedWeaponType ? 'bg-amber-500/20 border-amber-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'}">${abbr[k] || k.slice(0, 3).toUpperCase()}</button>`
-      ).join('');
-    })();
+    // Weapon pickers: one coloured box per grade (Special > Grade 1 > Grade 2 > Grade 3)
+    const GRADES = [
+      { g: 0, name: 'SPECIAL GRADE', color: '#facc15' },
+      { g: 1, name: 'GRADE 1', color: '#f87171' },
+      { g: 2, name: 'GRADE 2', color: '#38bdf8' },
+      { g: 3, name: 'GRADE 3', color: '#34d399' }
+    ];
+    function buildWeaponPickers() {
+      const html = (compact) => GRADES.map(G => {
+        const keys = Object.keys(WEAPONS).filter(k => WEAPONS[k].grade === G.g);
+        return `<div class="gbox" style="--gc:${G.color}"><div class="gtitle">${G.name}</div><div class="ggrid">` +
+          keys.map(k => `<button class="wbtn${compact ? ' wc' : ''}${k === selectedWeaponType ? ' sel' : ''}" data-w="${k}" style="--gc:${G.color}" onclick="selectWeapon('${k}')">${WEAPONS[k].name}</button>`).join('') +
+          `</div></div>`;
+      }).join('');
+      document.getElementById('weapon-grid').innerHTML = html(false);
+      document.getElementById('go-weapons').innerHTML = html(true);
+      document.getElementById('weapon-spec').innerText = WEAPONS[selectedWeaponType].spec;
+    }
+    buildWeaponPickers();
 
     // Invite link (?room=ABCD): open the online screen with the code filled in
     (function () {
