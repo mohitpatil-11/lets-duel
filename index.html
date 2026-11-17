@@ -17,6 +17,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="description" content="Let’s Duel: a free physics shooter. Spin, aim and fire your weapon. Play vs bots, with friends on one phone, or online. 20+ weapons, 3 maps.">
+  <meta property="og:url" content="https://mohitpatil-11.github.io/lets-duel/">
+  <link rel="canonical" href="https://mohitpatil-11.github.io/lets-duel/">
+  <noscript><style>body::before{content:"Please turn on JavaScript to play Let’s Duel.";color:#fff;font:16px sans-serif;padding:24px;display:block}</style></noscript>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="config.js"></script>
@@ -34,6 +38,13 @@
     .wbtn:active{transform:scale(.95)}
     .wbtn.sel{border:2px solid var(--gc);background:rgba(255,255,255,.16);background:color-mix(in srgb, var(--gc) 28%, #0f172a);color:#fff}
     #gameover-overlay > * { flex-shrink: 0; }
+    .infop{position:absolute;inset:0;z-index:40;background:#020617;overflow-y:auto;padding:16px;flex-direction:column;gap:8px}
+    .infop h2{font-family:Orbitron,sans-serif;font-weight:900;font-size:18px;letter-spacing:.08em;color:#fbbf24}
+    .infop h3{font-family:Orbitron,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;color:#7dd3fc;margin-top:6px}
+    .infop p,.infop li{font-size:12px;color:#cbd5e1;line-height:1.55}
+    .infop ul{padding-left:16px;list-style:disc}
+    .infop a{color:#7dd3fc;text-decoration:underline}
+    .infop .closeb{align-self:center;margin-top:10px;padding:10px 26px;border-radius:14px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-family:Orbitron,sans-serif;font-weight:900;font-size:12px}
     .pulse-btn { animation:pulseGlow 1.8s infinite alternate; }
     @keyframes pulseGlow { 0%{box-shadow:0 0 12px rgba(245,158,11,.4);} 100%{box-shadow:0 0 25px rgba(245,158,11,.8);} }
   </style>
@@ -104,6 +115,16 @@
         </div>
       </div>
 
+      <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-inner">
+        <div class="text-[10px] font-orbitron text-slate-400 font-bold mb-1.5 px-1">MAP: <span id="map-spec" class="text-slate-500 text-[9px]"></span></div>
+        <div id="map-grid" class="grid grid-cols-3 gap-1.5"></div>
+      </div>
+
+      <div class="flex gap-2 w-full">
+        <button onclick="showInfo('how')" class="flex-1 py-2 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-bold text-slate-300 active:scale-95">❓ HOW TO PLAY</button>
+        <button onclick="showInfo('about')" class="flex-1 py-2 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-bold text-slate-300 active:scale-95">ℹ️ ABOUT &amp; PRIVACY</button>
+      </div>
+
       <div class="flex flex-col gap-2 w-full mb-1">
         <button onclick="startGame('ai')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl pulse-btn active:scale-95 transition-all text-sm tracking-wider">1 PLAYER (VS BOT)</button>
         <button onclick="startGame('pvp')" class="w-full py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 text-white font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">2 PLAYERS (LOCAL DUEL)</button>
@@ -112,6 +133,8 @@
         <button onclick="startGame('ffa4')" class="w-full py-3.5 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 font-orbitron font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm tracking-wider">🔷 FREE FOR ALL (PvPvPvP)</button>
       </div>
     </div>
+
+    <div id="info-panel" class="infop" style="display:none"><h2 id="info-title"></h2><div id="info-body"></div><button class="closeb" onclick="closeInfo()">CLOSE</button></div>
 
     <!-- Online Panel -->
     <div id="online-panel" style="display:none" class="absolute inset-0 bg-slate-950 flex-col items-center justify-center gap-3 p-5 z-30">
@@ -179,9 +202,10 @@
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const GUN_COLORS = ['#f59e0b', '#ef4444', '#22c55e', '#38bdf8'];
-    const AIM_COLORS = ['rgba(245,158,11,0.35)', 'rgba(239,68,68,0.35)', 'rgba(34,197,94,0.35)', 'rgba(56,189,248,0.35)'];
+    const AIM_COLORS = ['rgba(245,158,11,0.7)', 'rgba(239,68,68,0.7)', 'rgba(34,197,94,0.7)', 'rgba(56,189,248,0.7)'];
     const PLAYER_NAMES = ['Player 1', 'Red Bot', 'Green Bot', 'Blue Bot'];
-    const GUN_SCALE = 1.2; // change this number to resize every gun (1.0 = original size)
+    const RANGED_SCALE = 1.8;   // size of ranged weapons (1.0 = original)
+    const MELEE_SCALE = 1.2;    // size of close-combat weapons (1.0 = original)
 
     // ---------- Weapon artwork (each ranged weapon has its own shape; x = forward, origin = gun centre) ----------
     const poly = (pts, fill) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); ctx.fill(); };
@@ -296,6 +320,69 @@
         dot(8, 0, 3, '#78716c');                                           // stone
         box(-2, -2, 4, 3, c);
       },
+      railgun(c, g) {
+        const reloading = g && g.reloading, charge = reloading ? Math.max(0, Math.min(1, 1 - g.reloadTimer / g.config.reloadTime)) : 1;
+        const ready = !reloading && (g ? g.ammo > 0 : true), now = performance.now();
+        box(-14, -5, 26, 10, '#312e81');                                   // body
+        box(10, -6, 36, 3, ready ? '#c4b5fd' : '#6d28d9'); box(10, 3, 36, 3, ready ? '#c4b5fd' : '#6d28d9');   // twin rails (bright only when charged)
+        box(12, -3, 32, 6, '#1e1b4b');                                     // empty energy core
+        if (reloading) {                                                   // charging: the core fills up while energy dots flow into the gun
+          box(12, -3, 32 * charge, 6, '#8b5cf6');
+          const front = 12 + 32 * charge;
+          for (let k = 0; k < 5; k++) { const t = (now / 260 + k / 5) % 1; dot(46 - (46 - front) * t, k % 2 ? -4.5 : 4.5, 2, '#f5f3ff'); }
+        } else if (ready) {
+          box(12, -3, 32, 6, '#f5f3ff');                                   // fully charged: steady bright core
+        }
+        const n = g ? g.config.maxAmmo : 2;                                // one bar per bullet
+        for (let i = 0; i < n; i++) {
+          const lit = reloading ? charge >= (i + 1) / n : (g ? g.ammo > i : true);
+          box(-9, -4 + i * 5, 16, 3.5, lit ? '#f5f3ff' : '#1e1b4b');
+        }
+        box(-14, -3, 3, 6, '#a78bfa');
+        poly([[-8, 5], [-1, 5], [-4, 15], [-12, 13]], '#1e1b4b');          // grip
+        box(-13, -1, 3, 2, c);
+      },
+      ricochet(c) {
+        poly([[-8, 3], [-1, 3], [-4, 14], [-12, 12]], '#713f12');          // grip
+        box(-10, -5, 22, 10, '#a16207');                                   // body
+        box(12, -3, 18, 6, '#fde047');                                     // barrel
+        ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, -2); ctx.lineTo(36, -8); ctx.lineTo(40, 0); ctx.lineTo(46, -6); ctx.stroke();   // bounce zig-zag
+        box(-4, -3, 6, 2, c);
+      },
+      harpoon(c) {
+        box(-14, -5, 24, 10, '#115e59');                                   // body
+        poly([[-8, 5], [-1, 5], [-4, 15], [-12, 13]], '#134e4a');          // grip
+        box(10, -2, 26, 4, '#94a3b8');                                     // shaft
+        poly([[36, -7], [47, 0], [36, 7], [40, 0]], '#5eead4');            // barbed head
+        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-14, 0); ctx.quadraticCurveTo(-24, 8, -22, 17); ctx.stroke();   // rope
+        box(-4, -3, 6, 2, c);
+      },
+      rifle(c) {
+        poly([[-10, -4], [-28, -2], [-28, 9], [-12, 6]], '#92400e');       // wooden stock
+        box(-10, -4, 22, 9, '#4b5563');                                    // receiver
+        box(12, -2, 28, 4, '#6b7280');                                     // long barrel
+        box(38, -3, 3, 6, '#9ca3af');                                      // muzzle
+        box(-2, 5, 5, 7, '#374151');                                       // magazine
+        box(-6, -3, 6, 2, c);
+      },
+      taser(c) {   // police-style stun gun: yellow body, black cartridge with two probe holes, red laser dot, flashing red/blue light
+        const now = performance.now(), flip = Math.floor(now / 180) % 2;
+        poly([[-8, 3], [0, 3], [-3, 15], [-12, 13]], '#111827');           // grip
+        box(-14, -6, 24, 11, '#facc15'); box(-14, -1, 24, 2.5, '#111827');  // yellow body with black stripe
+        ctx.strokeStyle = '#111827'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-3, 5); ctx.lineTo(-3, 9); ctx.lineTo(3, 9); ctx.lineTo(3, 5); ctx.stroke();   // trigger guard
+        box(10, -7, 18, 13, '#1f2937'); dot(25, -3, 1.6, '#facc15'); dot(25, 3, 1.6, '#facc15');   // probe cartridge
+        box(-9, -9, 5, 3, flip ? '#ef4444' : '#7f1d1d'); box(-3, -9, 5, 3, flip ? '#1e3a8a' : '#60a5fa');   // police light
+        ctx.globalAlpha = 0.5 + 0.5 * Math.sin(now / 90); dot(29, 0, 1.8, '#ef4444'); ctx.globalAlpha = 1;   // laser sight
+        box(-12, -4, 4, 2, c);
+      },
+      blackhole(c) {
+        poly([[-8, 4], [-1, 4], [-4, 15], [-12, 13]], '#1e1b4b');          // grip
+        box(-12, -6, 22, 12, '#312e81'); box(10, -4, 14, 8, '#4c1d95');    // body and barrel
+        const t = performance.now() / 200;
+        ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(30, 0, 8, 6 + Math.sin(t) * 1.5, 0, 0, 7); ctx.stroke();   // swirling ring
+        dot(30, 0, 4, '#020617');                                          // the hole
+        box(-6, -3, 6, 2, c);
+      },
       crossbow(c) {
         poly([[-14, -3], [18, -2], [18, 2], [-14, 4], [-18, 1]], '#92400e'); // wooden stock
         ctx.lineCap = 'round';
@@ -311,12 +398,50 @@
 
     const gridCanvas = document.createElement('canvas');
     gridCanvas.width = W; gridCanvas.height = H;
-    (function () {
+    (function () {   // arena background: calm steel-blue with a faint grid (low noise so aim lines stand out)
       const g = gridCanvas.getContext('2d');
-      g.strokeStyle = 'rgba(51,65,85,0.2)'; g.lineWidth = 1;
+      const sky = g.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, '#1b2a41'); sky.addColorStop(1, '#25405c');
+      g.fillStyle = sky; g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(148,163,184,0.10)'; g.lineWidth = 1;
       for (let x = 0; x < W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
       for (let y = 0; y < H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+      g.strokeStyle = 'rgba(148,163,184,0.45)'; g.lineWidth = 4; g.strokeRect(2, 2, W - 4, H - 4);
     })();
+
+    // ---------- Maps: background, terrain and gravity ----------
+    const BGS = { arena: gridCanvas };
+    function mkBg(draw) { const c = document.createElement('canvas'); c.width = W; c.height = H; draw(c.getContext('2d')); return c; }
+    BGS.moon = mkBg(g => {   // grey lunar ground with craters
+      const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#2a3142'); gr.addColorStop(1, '#4b5568');
+      g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 9; i++) {
+        const x = rnd() * W, y = rnd() * H, r = 18 + rnd() * 40;
+        g.fillStyle = 'rgba(0,0,0,0.07)'; g.beginPath(); g.arc(x + r * 0.15, y + r * 0.15, r * 0.8, 0, 7); g.fill();
+        g.strokeStyle = 'rgba(255,255,255,0.08)'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
+      }
+      g.strokeStyle = 'rgba(203,213,225,0.45)'; g.lineWidth = 4; g.strokeRect(2, 2, W - 4, H - 4);
+    });
+    BGS.jupiter = mkBg(g => {   // calm striped gas-giant clouds
+      const cols = ['#5a3a22', '#7a4b27', '#6a4224', '#8a5a30', '#64402a'], bh = H / (cols.length * 2);
+      for (let i = 0; i < cols.length * 2; i++) { g.fillStyle = cols[i % cols.length]; g.fillRect(0, i * bh, W, bh + 1); }
+      g.fillStyle = 'rgba(190,80,50,0.22)'; g.beginPath(); g.ellipse(W * 0.7, H * 0.62, 80, 36, 0, 0, 7); g.fill();   // storm
+      g.strokeStyle = 'rgba(255,255,255,0.06)'; g.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+      g.strokeStyle = 'rgba(230,180,120,0.55)'; g.lineWidth = 4; g.strokeRect(2, 2, W - 4, H - 4);
+    });
+    const MAPS = {
+      arena:   { name: 'ARENA',   color: '#38bdf8', spec: 'NORMAL GRAVITY', gravity: 420, obs: ['#334155', '#475569'], obstacles: [{ x: W / 2 - 45, y: H / 3, w: 90, h: 18 }] },
+      moon:    { name: 'MOON',    color: '#cbd5e1', spec: 'LOW GRAVITY: FLOATY', gravity: 170, obs: ['#64748b', '#94a3b8'], obstacles: [{ x: W / 2 - 45, y: H / 3, w: 90, h: 18 }] },
+      jupiter: { name: 'JUPITER', color: '#fb923c', spec: 'HEAVY GRAVITY: DROPS FAST', gravity: 720, obs: ['#44302a', '#a87850'], obstacles: [{ x: W / 2 - 45, y: H / 3, w: 90, h: 18 }] }
+    };
+    let selectedMap = 'arena', currentMap = 'arena';
+    function selectMap(k) {
+      selectedMap = k; savePrefs();
+      document.querySelectorAll('.map-b').forEach(b => b.classList.toggle('sel', b.dataset.m === k));
+      document.getElementById('map-spec').innerText = MAPS[k].name + ' (' + MAPS[k].spec + ')';
+    }
 
     let isRunning = false;
     let gameMode = 'ai'; // 'ai' | 'pvp' | 'online-host' | 'online-guest'
@@ -330,24 +455,30 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:160, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
-      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:160, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
-      smg: { name:'SMG', grade:3, muzzle:28, hp:160, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
+      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:170, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
+      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:170, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
+      smg: { name:'SMG', grade:3, muzzle:28, hp:170, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
       sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:250, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
-      plasma: { name:'PLASMA', grade:1, ignoreShield:true, burn:1.5, muzzle:30, hp:250, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: IGNORES SHIELDS, BURNS)' },
-      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, bladeLen:58, hp:200, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
+      plasma: { name:'PLASMA', grade:1, burn:1.5, muzzle:30, hp:250, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: BURNS EVEN THROUGH A SHIELD)' },
+      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:13, hitTo:68, hitW:5, bladeLen:58, hp:150, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
       shield: { name:'SHIELD', grade:1, muzzle:28, damage:16, recoilForce:450, torqueKick:3.967, spinBase:1, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:350, shield:true, color:'#38bdf8', spec:'SHIELD (BLOCKS SHOTS AND BLADES FROM THE FRONT)' },
       rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:250, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
-      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'axe', bladeLen:44, hp:200, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:200, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
-      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'spear', hp:200, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
-      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:290, damage:30, recoilForce:200, torqueKick:3.967, spinBase:1, mass:1.0, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
-      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:290, damage:7, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
-      vampire: { name:'VAMPIRE', grade:0, hp:290, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
+      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:30, hitTo:52, hitW:18, style:'axe', bladeLen:44, hp:150, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:210, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
+      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:76, hitTo:98, hitW:6, style:'spear', hp:150, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
+      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:290, damage:28, recoilForce:520, torqueKick:3.967, spinBase:1, mass:0.8, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
+      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:290, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
+      vampire: { name:'VAMPIRE', grade:0, hp:230, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
       tesla: { name:'TESLA', grade:0, muzzle:34, hp:290, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
-      cryo: { name:'CRYO', grade:1, muzzle:32, hp:250, slow:2, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
-      hammer: { name:'HAMMER', grade:2, hp:200, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
-      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:160, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:8, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' }
+      cryo: { name:'CRYO', grade:1, muzzle:32, hp:250, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
+      hammer: { name:'HAMMER', grade:2, hp:150, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
+      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:170, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
+      railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:290, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
+      ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:250, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
+      harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:210, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
+      rifle: { name:'RIFLE', grade:3, muzzle:40, hp:170, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
+      taser: { name:'TASER', grade:3, muzzle:30, hp:170, stun:2, range:300, damage:43, recoilForce:200, torqueKick:2.3, spinBase:0.9, mass:1.0, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
+      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:290, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
 
@@ -380,20 +511,49 @@
       playPickup() { this.tone('triangle', 440, 880, 0.16, 0.2); }
     };
 
+    function showInfo(which) {
+      const how = `<h3>THE BASICS</h3><ul>
+        <li>Your weapon spins on its own. Tap <b>FIRE</b> (or the screen) when the dotted aim line points at an enemy.</li>
+        <li>Every shot pushes you back and changes your spin, so use it to move too.</li>
+        <li>Last one standing wins. Pickups: green <b>+</b> heals, <b>⚡</b> refills ammo.</li></ul>
+        <h3>WEAPONS</h3><ul>
+        <li>Four grades: <b>Special &gt; Grade 1 &gt; Grade 2 &gt; Grade 3</b>. Higher grades have more health. Tap a weapon to see what it does.</li>
+        <li><b>Close combat</b> (sword, axe, spear, hammer, vampire): only the blade or head hurts. Tap to lunge.</li>
+        <li><b>Shield</b> blocks shots and blades from the front, but burn, stun and freeze still get through.</li></ul>
+        <h3>MODES AND MAPS</h3><ul>
+        <li>1 player vs a bot, 2 players on one device, free-for-all with 3 or 4 guns, and online.</li>
+        <li>Online: one player taps HOST and shares the 4-letter code or invite link, the others tap JOIN.</li>
+        <li>Maps: Arena (normal gravity), Moon (low), Jupiter (heavy).</li></ul>
+        <h3>KEYBOARD</h3><ul><li>Player 1: W or Space. Player 2: Arrow Up.</li></ul>`;
+      const about = `<p><b>Let’s Duel</b> is a free fan-made physics duel game, inspired by <i>Pistol Duel</i> by Kayac. It is an unofficial project and is not affiliated with or endorsed by Kayac.</p>
+        <h3>PRIVACY</h3><ul>
+        <li>The game has no accounts, no ads and no chat, and it does not collect your personal data.</li>
+        <li>Your choices (weapon, map, sound) are saved only on your own device.</li>
+        <li>Like any website, it loads fonts and scripts from Google Fonts, Tailwind and unpkg, which can see your IP address.</li>
+        <li><b>Online play is peer-to-peer.</b> Your device connects to the other players, so they can technically see your IP address. A free matchmaking server (PeerJS) and relay (Metered) help devices find each other. Only share your room code with people you trust.</li></ul>
+        <h3>FEEDBACK</h3><p>Found a bug or have an idea? <a href="https://github.com/mohitpatil-11/lets-duel/issues" target="_blank" rel="noopener">Open an issue on GitHub</a>.</p>
+        <p style="color:#64748b">Version ${APP_VERSION}</p>`;
+      document.getElementById('info-title').innerText = which === 'how' ? 'HOW TO PLAY' : 'ABOUT & PRIVACY';
+      document.getElementById('info-body').innerHTML = which === 'how' ? how : about;
+      document.getElementById('info-panel').style.display = 'flex';
+    }
+    function closeInfo() { document.getElementById('info-panel').style.display = 'none'; }
+
     function toggleSound() {
       soundEnabled = !soundEnabled;
       document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
+      savePrefs();
     }
 
     function selectWeapon(type) {
-      selectedWeaponType = type;
+      selectedWeaponType = type; savePrefs();
       document.querySelectorAll('.wbtn').forEach(b => b.classList.toggle('sel', b.dataset.w === type));
       document.getElementById('weapon-spec').innerText = WEAPONS[type].spec;
       if (netRole === 'guest') netSend({ t: 'weapon', w: type });
     }
 
     function selectDifficulty(diff) {
-      aiDifficulty = diff;
+      aiDifficulty = diff; savePrefs();
       document.querySelectorAll('.diff-btn').forEach(btn => {
         btn.classList.remove('bg-amber-500/20', 'border-2', 'border-amber-500', 'text-amber-300');
         btn.classList.add('bg-slate-800', 'border', 'border-slate-700', 'text-slate-400');
@@ -445,9 +605,14 @@
           }
         }
         if (this.x < 10 || this.x > W - 10 || this.y < 10 || this.y > H - 10) {
-          if (this.config.turn && this.owner !== undefined && !this.returning) {
-            this.returning = true; this.hitSet.clear();
+          if (this.config.turn) {   // boomerang: never vanishes on a wall; it turns back and stays in the arena
             this.x = Math.max(10, Math.min(W - 10, this.x)); this.y = Math.max(10, Math.min(H - 10, this.y));
+            if (this.owner !== undefined && !this.returning) { this.returning = true; this.hitSet.clear(); }
+          } else if (this.config.bounce && (this.bounces = (this.bounces || 0) + 1) <= this.config.bounce) {
+            if (this.x < 10 || this.x > W - 10) this.vx = -this.vx;
+            if (this.y < 10 || this.y > H - 10) this.vy = -this.vy;
+            this.x = Math.max(10, Math.min(W - 10, this.x)); this.y = Math.max(10, Math.min(H - 10, this.y));
+            createSparks(this.x, this.y, '#fde047');
           } else {
             this.active = false;
             createSparks(this.x, this.y, '#cbd5e1');
@@ -527,9 +692,9 @@
         this.config = config; this.isPlayer1 = isPlayer1; this.index = idx;
         this.angle = isPlayer1 ? -Math.PI / 4 : -Math.PI * 3 / 4;
         this.spinSpeed = config.spinBase * (isPlayer1 ? 1 : -1);
-        this.bladeCD = [0, 0, 0, 0]; this.burnT = 0; this.burnAcc = 0; this.slowT = 0; this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
+        this.bladeCD = [0, 0, 0, 0]; this.burnT = 0; this.burnAcc = 0; this.slowT = 0; this.stunT = 0; this.maxHp = config.hp || 100; this.hp = this.maxHp; this.ammo = config.maxAmmo;
         this.cooldown = 0; this.reloading = false; this.reloadTimer = 0;
-        this.alive = true; this.radius = 18 * GUN_SCALE;
+        this.alive = true; this.scale = config.melee ? MELEE_SCALE : RANGED_SCALE; this.radius = 18 * this.scale;
       }
 
       update(dt) {
@@ -539,12 +704,12 @@
         const minSpin = this.config.melee ? 1.5 : (this.config.minSpin || 0.75);   // never stop turning (a gun stuck pointing down could never aim)
         if (Math.abs(this.spinSpeed) < minSpin) this.spinSpeed = (this.spinSpeed >= 0 ? 1 : -1) * minSpin;
 
-        this.vy += 420 * dt;
+        this.vy += MAPS[currentMap].gravity * dt;
         this.vx *= Math.exp(-0.75 * dt);
         this.vy *= Math.exp(-0.75 * dt);
         this.x += this.vx * dt; this.y += this.vy * dt;
 
-        const margin = 22 * GUN_SCALE, bnc = 0.65;
+        const margin = 22 * this.scale, bnc = 0.65;
         if (this.x < margin) { this.x = margin; this.vx = Math.abs(this.vx) * bnc; this.spinSpeed *= -0.8; }
         if (this.x > W - margin) { this.x = W - margin; this.vx = -Math.abs(this.vx) * bnc; this.spinSpeed *= -0.8; }
         if (this.y < margin) { this.y = margin; this.vy = Math.abs(this.vy) * bnc; }
@@ -588,6 +753,7 @@
         });
 
         if (this.slowT > 0) { this.slowT -= dt; this.vx *= Math.exp(-2.5 * dt); this.vy *= Math.exp(-2.5 * dt); }   // frozen: sluggish
+        if (this.stunT > 0) { this.stunT -= dt; this.vx *= Math.exp(-4 * dt); this.vy *= Math.exp(-4 * dt); }   // stunned: cannot fire
         if (this.cooldown > 0) this.cooldown -= dt * (this.slowT > 0 ? 0.5 : 1);
         for (let i = 0; i < 4; i++) if (this.bladeCD[i] > 0) this.bladeCD[i] -= dt;
         if (this.reloading) {
@@ -598,7 +764,7 @@
 
       shoot() {
         if (!this.alive || !isRunning) return;
-        if (this.reloading || this.cooldown > 0) return;
+        if (this.reloading || this.cooldown > 0 || this.stunT > 0) return;
 
         if (this.config.melee) { // sword: tap = lunge forward + fast swing, damage comes from the blade touching someone
           this.cooldown = this.config.cooldown;
@@ -623,9 +789,9 @@
         const dirX = Math.cos(this.angle), dirY = Math.sin(this.angle);
         const recoil = this.config.recoilForce / this.config.mass;
         this.vx -= dirX * recoil; this.vy -= dirY * recoil;
-        this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * (this.config.steady ? 0.26 : 1.98));
+        this.spinSpeed = (dirY > 0 ? 1 : -1) * this.config.torqueKick + (Math.random() * (this.config.steady ? 0.1 : 0.8));
 
-        const mz = (this.config.muzzle || 26) * GUN_SCALE; const muzzleX = this.x + dirX * mz, muzzleY = this.y + dirY * mz;
+        const mz = (this.config.muzzle || 26) * this.scale; const muzzleX = this.x + dirX * mz, muzzleY = this.y + dirY * mz;
 
         for (let i = 0; i < this.config.pellets; i++) {
           const sa = this.angle + (Math.random() - 0.5) * this.config.spread;
@@ -654,7 +820,7 @@
         ctx.setLineDash([]);
 
         ctx.rotate(this.angle);
-        ctx.scale(GUN_SCALE, GUN_SCALE);
+        ctx.scale(this.scale, this.scale);
         if (this.config.melee && this.config.style === 'hammer') { // war hammer: long handle + heavy square head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2.5, BL + 4, 5);
@@ -690,7 +856,7 @@
           ctx.moveTo(13, -5); ctx.lineTo(BL, -2); ctx.lineTo(BL + 10, 0); ctx.lineTo(BL, 2); ctx.lineTo(13, 5); ctx.closePath(); ctx.fill();
           ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(BL, 0); ctx.stroke();
         } else {
-          (GUN_ART[this.config.name.toLowerCase()] || GUN_ART.revolver)(GUN_COLORS[this.index]);
+          (GUN_ART[this.config.name.toLowerCase()] || GUN_ART.revolver)(GUN_COLORS[this.index], this);
         }
         if (this.config.shield) { ctx.fillStyle = 'rgba(125,211,252,0.18)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.stroke(); ctx.lineCap = 'butt'; }
         ctx.restore();
@@ -699,7 +865,7 @@
           ctx.save();
           ctx.beginPath();
           const progress = 1 - (this.reloadTimer / this.config.reloadTime);
-          ctx.arc(this.x, this.y - 26 * GUN_SCALE, 8, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * progress));
+          ctx.arc(this.x, this.y - 26 * this.scale, 8, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * progress));
           ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.stroke();
           ctx.restore();
         }
@@ -734,12 +900,13 @@
     }
 
     function setupEnvironment() {
+      const m = MAPS[currentMap];
       bouncePads = [
         new BouncePad(0, H / 2 - 40, 14, 80, 1, 0),
         new BouncePad(W - 14, H / 2 - 40, 14, 80, -1, 0),
         new BouncePad(W / 2 - 50, H - 14, 100, 14, 0, -1)
       ];
-      obstacles = [{ x: W / 2 - 45, y: H / 3, w: 90, h: 18 }];
+      obstacles = m.obstacles.map(o => ({ ...o }));
     }
 
     // ---------- Game flow ----------
@@ -754,6 +921,7 @@
     function startGame(mode) {
       AudioEngine.init();
       gameMode = mode;
+      if (mode !== 'online-guest') currentMap = selectedMap;
       const isNet = mode === 'online-host' || mode === 'online-guest';
 
       document.getElementById('menu-overlay').classList.add('opacity-0', 'pointer-events-none');
@@ -776,11 +944,12 @@
       player4 = n >= 4 ? new PhysicsGun(W - 100, 450, isNet ? WEAPONS[netP4Weapon] : WEAPONS[randWeapon()], false, 3) : null;
       if (player3) { player3.angle = -Math.PI / 2; player3.spinSpeed = 1.5; }
       if (player4) { player4.angle = -Math.PI / 2; player4.spinSpeed = -1.5; }
+      [player1, player2, player3, player4].forEach(g => { if (g) { g.angle = Math.atan2(g.y - H / 2, g.x - W / 2); g.spinSpeed = (g.spinSpeed >= 0 ? 1 : -1) * 4; } });   // start facing outwards, then spin up fast so it sweeps past the enemies within a second or two
       document.getElementById('p3-hud').style.display = n >= 3 ? 'flex' : 'none';
       document.getElementById('p4-half').style.display = n >= 4 ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false;
+      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false; wells = [];
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa' || mode === 'ffa4') ? 'BOT' : p2Config.name.substring(0, 4);
@@ -824,6 +993,7 @@
     }
 
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
+    let wells = [];
     let koActive = false, koX = 0, koY = 0, koStart = 0, gameEnding = false, matchTime = 0, suddenShown = false;
     function startKO(x, y) {
       koActive = true; koX = x; koY = y; koStart = performance.now();
@@ -976,7 +1146,7 @@
       startGame('online-host');
     }
     function sendStart() {
-      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA };
+      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA, map: currentMap };
       if (netFFA) slotConn.forEach((c, i) => { if (c && c.open) { try { c.send({ ...base, slot: i }); } catch (e) {} } });
       else netSend(base);
     }
@@ -985,6 +1155,8 @@
       if (!slot || isRunning) { c.close(); return; }
       slotConn[slot] = c;
       c.on('data', (m) => {
+        if (!m || typeof m !== 'object') return;
+        if (m.t === 'fire') { const now = performance.now(); if (now - (c.__lastFire || 0) < 40) return; c.__lastFire = now; }   // ignore fire spam
         if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; updateLobby(); }
         else if (m.t === 'fire') { const g = [player1, player2, player3, player4][slot]; if (gameMode === 'online-host' && g) g.shoot(); }
         else if (m.t === 'weapon' && WEAPONS[m.w]) netWeapons[slot] = m.w;
@@ -1039,7 +1211,7 @@
     }
 
     async function joinGame() {
-      const code = document.getElementById('join-code').value.trim().toUpperCase();
+      const code = document.getElementById('join-code').value.trim().toUpperCase().replace(/[^A-Z]/g, '');
       if (code.length < 4) { netStatus('Enter the 4-letter code'); return; }
       cleanupNet();
       netRole = 'guest';
@@ -1057,7 +1229,7 @@
       conn.on('open', () => {
         if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType }); }
       });
-      conn.on('data', handleNet);
+      conn.on('data', (m) => { try { handleNet(m); } catch (e) {} });
       conn.on('close', onNetClose);
       conn.on('error', onNetClose);
     }
@@ -1071,6 +1243,7 @@
     }
 
     function handleNet(m) {
+      if (!m || typeof m !== 'object' || typeof m.t !== 'string') return;
       switch (m.t) {
         case 'hello': // host: guest joined
           if (netRole !== 'host') return;
@@ -1080,11 +1253,11 @@
           break;
         case 'start': // guest: host started a round
           if (netRole !== 'guest') return;
-          netP1Weapon = m.p1; netP2Weapon = m.p2; netP3Weapon = m.p3 || 'revolver'; netP4Weapon = m.p4 || 'revolver'; netFFA = m.ffa | 0; mySlot = m.slot || 1;
+          const okW = w => (WEAPONS[w] ? w : 'revolver'); netP1Weapon = okW(m.p1); netP2Weapon = okW(m.p2); netP3Weapon = okW(m.p3); netP4Weapon = okW(m.p4); netFFA = m.ffa | 0; currentMap = MAPS[m.map] ? m.map : 'arena'; mySlot = ((m.slot | 0) >= 1 && (m.slot | 0) <= 3) ? (m.slot | 0) : 1;
           startGame('online-guest');
           break;
         case 's':
-          if (gameMode === 'online-guest' && isRunning && m.n > lastSeq) { lastSeq = m.n; applySnapshot(m); }
+          if (gameMode === 'online-guest' && isRunning && m.n > lastSeq && Array.isArray(m.p1) && Array.isArray(m.p2) && Array.isArray(m.b) && Array.isArray(m.c)) { lastSeq = m.n; applySnapshot(m); }
           break;
         case 'fire':
           if (gameMode === 'online-host' && player2) player2.shoot();
@@ -1122,7 +1295,7 @@
         if (ammo < p.ammo) {
           AudioEngine.playShoot(p.config.name.toLowerCase());
           screenShakeTime = 0.08; screenShakeForce = p.config.recoilForce * 0.004;
-          muzzleFlash(p.x + Math.cos(p.angle) * (p.config.muzzle || 26) * GUN_SCALE, p.y + Math.sin(p.angle) * (p.config.muzzle || 26) * GUN_SCALE, p.angle);
+          muzzleFlash(p.x + Math.cos(p.angle) * (p.config.muzzle || 26) * p.scale, p.y + Math.sin(p.angle) * (p.config.muzzle || 26) * p.scale, p.angle);
         }
         if (hp < p.hp) {
           AudioEngine.playHit();
@@ -1166,7 +1339,7 @@
           let d = p.tAng - p.angle; d -= Math.PI * 2 * Math.round(d / (Math.PI * 2));
           p.angle += d * k;
         }
-        const m = 22 * GUN_SCALE;
+        const m = 22 * p.scale;
         p.x = Math.min(W - m, Math.max(m, p.x));
         p.y = Math.min(H - m - 10, Math.max(m, p.y));
         if (p.reloading) p.reloadTimer = Math.max(0, p.reloadTimer - dt);
@@ -1190,6 +1363,20 @@
     }, 7000);
 
     function randWeapon() { const k = Object.keys(WEAPONS); return k[Math.floor(Math.random() * k.length)]; }
+    // Whole-body hit shape: a gun can be hurt anywhere on its body, handle and blade included
+    function segSegDist(a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y) {
+      const o = (ax, ay, bx, by, cx, cy) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+      if (o(a1x, a1y, a2x, a2y, b1x, b1y) * o(a1x, a1y, a2x, a2y, b2x, b2y) < 0 && o(b1x, b1y, b2x, b2y, a1x, a1y) * o(b1x, b1y, b2x, b2y, a2x, a2y) < 0) return 0;
+      return Math.min(segDist(a1x, a1y, b1x, b1y, b2x, b2y), segDist(a2x, a2y, b1x, b1y, b2x, b2y), segDist(b1x, b1y, a1x, a1y, a2x, a2y), segDist(b2x, b2y, a1x, a1y, a2x, a2y));
+    }
+    function bodyParts(t) {
+      const ca = Math.cos(t.angle), sa = Math.sin(t.angle), sc = t.scale, c = t.config;
+      const P = (f, to, w) => [t.x + ca * f * sc, t.y + sa * f * sc, t.x + ca * to * sc, t.y + sa * to * sc, w * sc];
+      const parts = [[t.x, t.y, t.x, t.y, t.radius]];                      // body core
+      if (c.melee) { parts.push(P(-14, c.hitTo + 6, 16)); parts.push(P(c.hitFrom, c.hitTo + 6, Math.max(c.hitW, 6) + 8)); }   // generous hurt zones: handle + blade/head (the drawing is unchanged)
+      else parts.push(P(-12, c.muzzle || 26, 9));                          // whole gun (stock to barrel)
+      return parts;
+    }
     function gunByIndex(i) { return [player1, player2, player3, player4][i]; }
     function bulletDamage(b) {   // sniper hits harder from far away, shotgun pellets weaken with distance
       const c = b.config; let m = 1;
@@ -1216,7 +1403,7 @@
       AudioEngine.playHit();
       createSparks(px, py, color);
       target.vx += kx; target.vy += ky;
-      target.spinSpeed += (Math.random() - 0.5) * 16;
+      target.spinSpeed += (Math.random() - 0.5) * (target.config.melee ? 16 : 6);
       combatTexts.push(new FloatingText(target.x, target.y - 12, `-${dmg}`, '#ef4444'));
       updateHUD();
       if (target.hp > 0) return;
@@ -1277,31 +1464,39 @@
           const bx0 = b.px === undefined ? b.x : b.px, by0 = b.py === undefined ? b.y : b.py;
           for (const target of all) {
             if (target.index === owner || !target.alive) continue;
-            if (c.turn && b.hitSet.has(target.index)) continue;
-            if (segDist(target.x, target.y, bx0, by0, b.x, b.y) >= target.radius + b.radius) continue;
+            if ((c.turn || c.pierce) && b.hitSet.has(target.index)) continue;
+            if (!bodyParts(target).some(q => segSegDist(bx0, by0, b.x, b.y, q[0], q[1], q[2], q[3]) < q[4] + b.radius)) continue;
             // Shield: blocks shots from the front arc (armor-piercing and energy shots ignore it)
             if (target.config.shield && !c.ignoreShield) {
               let d = Math.atan2(by0 - target.y, bx0 - target.x) - target.angle;
               d -= Math.PI * 2 * Math.round(d / (Math.PI * 2));
               if (Math.abs(d) < 1.15) {
-                if (c.turn) b.hitSet.add(target.index); else b.active = false;
+                if (c.turn || c.pierce) b.hitSet.add(target.index); else b.active = false;
                 createSparks(b.x, b.y, '#bae6fd');
                 combatTexts.push(new FloatingText(target.x, target.y - 14, 'BLOCKED', '#7dd3fc'));
+                if (target.alive) {
+                  if (c.burn) { target.burnT = c.burn; target.burnOwner = owner; }
+                  if (c.slow) target.slowT = c.slow;
+                  if (c.stun) { target.stunT = c.stun; target.tazeSrc = gunByIndex(owner); }
+                }
                 AudioEngine.tone('square', 900, 400, 0.08, 0.15);
                 break;
               }
             }
-            if (c.turn) b.hitSet.add(target.index); else b.active = false;
+            if (c.turn || c.pierce) b.hitSet.add(target.index); else b.active = false;
             const kb = c.knock || 0.2;
             dealDamage(target, owner, bulletDamage(b), b.x, b.y, b.vx * kb, b.vy * kb, c.color);
             if (c.burn && target.alive) { target.burnT = c.burn; target.burnOwner = owner; }
             if (c.slow && target.alive) { target.slowT = c.slow; combatTexts.push(new FloatingText(target.x, target.y - 18, 'FROZEN', '#a5f3fc')); }
+            if (c.stun && target.alive) { target.stunT = c.stun; target.tazeSrc = gunByIndex(owner); createSparks(target.x, target.y, '#facc15'); combatTexts.push(new FloatingText(target.x, target.y - 18, 'STUNNED', '#facc15')); }
+            if (c.well) wells.push({ x: b.x, y: b.y, t: 2, owner });
             if (c.chain) {   // lightning jumps to the nearest other enemy
               let best = null, bd = c.chain;
               all.forEach(o => { if (o === target || o.index === owner || !o.alive) return; const dd = Math.hypot(o.x - target.x, o.y - target.y); if (dd < bd) { bd = dd; best = o; } });
               if (best) {
                 for (let i = 0; i <= 8; i++) particles.push(new Particle(target.x + (best.x - target.x) * i / 8 + (Math.random() - 0.5) * 8, target.y + (best.y - target.y) * i / 8 + (Math.random() - 0.5) * 8, 0, 0, '#67e8f9', 0.25));
-                dealDamage(best, owner, Math.round(bulletDamage(b) * 0.6), best.x, best.y, 0, 0, '#67e8f9');
+                best.shockT = 2; best.shockClock = 0; best.shockOwner = owner; best.shockSrc = target; best.shockTotal = Math.round(bulletDamage(b) * 0.75);   // 75% of the hit, spread over 2 s
+                combatTexts.push(new FloatingText(best.x, best.y - 18, 'SHOCKED', '#67e8f9'));
               }
             }
             if (c.splash) {   // explosion: nearby enemies take reduced damage
@@ -1325,6 +1520,30 @@
             if (t.sdAcc >= 3) { t.sdAcc -= 3; dealDamage(t, t.index === 0 ? 1 : 0, 3, t.x, t.y, 0, 0, '#ef4444'); }
           });
         }
+        all.forEach(t => {   // taser wires: a crackling wire links the shooter to the stunned victim
+          if (!t.alive || !(t.stunT > 0) || !t.tazeSrc || !t.tazeSrc.alive) return;
+          const a = t.tazeSrc;
+          for (let i = 0; i < 3; i++) { const k = Math.random(); particles.push(new Particle(a.x + (t.x - a.x) * k + (Math.random() - 0.5) * 6, a.y + (t.y - a.y) * k + (Math.random() - 0.5) * 6, 0, 0, '#facc15', 0.1)); }
+        });
+        // Gravity wells (Blackhole): pull every enemy of the shooter toward the centre for 2 s
+        for (let i = wells.length - 1; i >= 0; i--) {
+          const w = wells[i]; w.t -= dt;
+          if (w.t <= 0) { wells.splice(i, 1); continue; }
+          all.forEach(g => {
+            if (!g.alive || g.index === w.owner) return;
+            const dx = w.x - g.x, dy = w.y - g.y, d = Math.hypot(dx, dy);
+            if (d < 170 && d > 8) { g.vx += dx / d * 900 * dt; g.vy += dy / d * 900 * dt; }
+          });
+          for (let k = 0; k < 2; k++) { const an = Math.random() * 6.28, r = 20 + Math.random() * 60; particles.push(new Particle(w.x + Math.cos(an) * r, w.y + Math.sin(an) * r, -Math.sin(an) * 60, Math.cos(an) * 60, '#a78bfa', 0.25)); }
+        }
+        // Shocked (Tesla): lightning keeps arcing from the first victim to the nearest enemy for 2 s, hurting it continuously
+        all.forEach(t => {
+          if (!t.alive || !(t.shockT > 0)) return;
+          t.shockT -= dt; t.shockClock += dt;
+          const src = t.shockSrc;
+          if (src) for (let i = 0; i < 3; i++) { const k = Math.random(); particles.push(new Particle(src.x + (t.x - src.x) * k + (Math.random() - 0.5) * 10, src.y + (t.y - src.y) * k + (Math.random() - 0.5) * 10, 0, 0, '#67e8f9', 0.12)); }
+          if (t.shockClock >= 0.25) { t.shockClock -= 0.25; dealDamage(t, t.shockOwner, Math.max(1, Math.round(t.shockTotal / 8)), t.x, t.y, 0, 0, '#67e8f9'); }
+        });
         // Burning: damage over time
         all.forEach(t => {
           if (!t.alive || !(t.burnT > 0)) return;
@@ -1335,12 +1554,13 @@
         // Sword blades hurt whoever they touch (each target at most every 0.5s)
         all.forEach(a => {
           if (!a.alive || !a.config.melee) return;
-          const L = (a.config.bladeLen + 8) * GUN_SCALE, vx = Math.cos(a.angle) * L, vy = Math.sin(a.angle) * L;
+          const cf = a.config, sc = a.scale, ca = Math.cos(a.angle), sa = Math.sin(a.angle);
+          const x1 = a.x + ca * cf.hitFrom * sc, y1 = a.y + sa * cf.hitFrom * sc, vx = ca * (cf.hitTo - cf.hitFrom) * sc, vy = sa * (cf.hitTo - cf.hitFrom) * sc;   // only the blade / head / tip hurts
           all.forEach(t => {
             if (t === a || !t.alive || a.bladeCD[t.index] > 0) return;
-            const u = Math.max(0, Math.min(1, ((t.x - a.x) * vx + (t.y - a.y) * vy) / (vx * vx + vy * vy)));
-            const px = a.x + vx * u, py = a.y + vy * u;
-            if (Math.hypot(t.x - px, t.y - py) < t.radius + (a.config.bladeWidth || 4)) {
+            const u = Math.max(0, Math.min(1, ((t.x - x1) * vx + (t.y - y1) * vy) / (vx * vx + vy * vy)));
+            const px = x1 + vx * u, py = y1 + vy * u;
+            if (bodyParts(t).some(q => segSegDist(x1, y1, x1 + vx, y1 + vy, q[0], q[1], q[2], q[3]) < ((cf.hitW || 4) + 3) * sc + q[4])) {
               a.bladeCD[t.index] = 0.5;
               if (t.config.shield) {   // a blade that hits the shield side is blocked
                 let d = Math.atan2(py - t.y, px - t.x) - t.angle;
@@ -1381,13 +1601,19 @@
         ctx.translate(koX, koY); ctx.scale(z, z); ctx.translate(-koX, -koY);
       }
 
-      ctx.drawImage(gridCanvas, 0, 0);
+      ctx.drawImage(BGS[currentMap] || gridCanvas, 0, 0);
 
-      ctx.fillStyle = '#334155'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      ctx.fillStyle = MAPS[currentMap].obs[0]; ctx.strokeStyle = MAPS[currentMap].obs[1]; ctx.lineWidth = 2;
       obstacles.forEach(o => { ctx.fillRect(o.x, o.y, o.w, o.h); ctx.strokeRect(o.x, o.y, o.w, o.h); });
 
       bouncePads.forEach(p => p.draw());
       arenaPickups.forEach(c => c.draw());
+      wells.forEach(w => {
+        ctx.save(); ctx.globalAlpha = Math.min(1, w.t);
+        ctx.fillStyle = 'rgba(2,6,23,0.9)'; ctx.beginPath(); ctx.arc(w.x, w.y, 22, 0, 7); ctx.fill();
+        ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(w.x, w.y, 30 + Math.sin(performance.now() / 120) * 3, 0, 7); ctx.stroke();
+        ctx.restore();
+      });
       particles.forEach(p => p.draw());
       bullets.forEach(b => b.draw());
       player1.draw();
@@ -1430,7 +1656,22 @@
       document.getElementById('go-weapons').innerHTML = html(true);
       document.getElementById('weapon-spec').innerText = WEAPONS[selectedWeaponType].spec;
     }
+    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled })); } catch (e) {} }
+    (function loadPrefs() {
+      try {
+        const p = JSON.parse(localStorage.getItem('letsduel') || '{}');
+        if (WEAPONS[p.w]) selectedWeaponType = p.w;
+        if (MAPS[p.m]) selectedMap = p.m;
+        if (['easy', 'normal', 'pro'].includes(p.d)) aiDifficulty = p.d;
+        if (p.s === false) soundEnabled = false;
+      } catch (e) {}
+    })();
     buildWeaponPickers();
+    document.getElementById('map-grid').innerHTML = Object.keys(MAPS).map(k =>
+      `<button class="wbtn map-b${k === selectedMap ? ' sel' : ''}" data-m="${k}" style="--gc:${MAPS[k].color}" onclick="selectMap('${k}')">${MAPS[k].name}</button>`).join('');
+    selectMap(selectedMap);
+    selectDifficulty(aiDifficulty);
+    document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
 
     // Invite link (?room=ABCD): open the online screen with the code filled in
     (function () {
