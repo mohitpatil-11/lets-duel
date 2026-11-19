@@ -98,6 +98,11 @@
         <button id="install-btn" style="display:none" onclick="installApp()" class="mt-2 py-1.5 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-[10px] font-orbitron font-bold text-emerald-300 active:scale-95">⬇ INSTALL APP</button>
       </div>
 
+      <div class="w-full flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-2xl px-3 py-2">
+        <span class="text-[10px] font-orbitron text-amber-400 font-bold">YOUR NAME</span>
+        <input id="name-input" maxlength="12" autocomplete="off" placeholder="Player" oninput="setName(this.value)" style="touch-action:auto;user-select:text;-webkit-user-select:text" class="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-orbitron text-white">
+      </div>
+
       <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-inner">
         <div class="text-[11px] font-orbitron text-amber-400 font-bold mb-2 flex justify-between items-center px-1">
           <span>SELECT WEAPON:</span>
@@ -162,6 +167,8 @@
     <div id="gameover-overlay" style="visibility:hidden" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center p-4 z-20 overflow-y-auto opacity-0 pointer-events-none transition-opacity duration-300">
       <div class="flex-1"></div>
       <h2 id="winner-text" class="font-orbitron text-3xl font-black mb-1 text-center tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent glow-title">PLAYER 1 WINS!</h2>
+      <p id="result-sub" class="font-orbitron text-sm font-bold text-amber-300 mb-1 tracking-widest"></p>
+      <div id="score-list" class="w-full max-w-xs mb-3"></div>
       <p class="text-slate-400 text-[10px] mb-6 font-orbitron tracking-widest uppercase">TOUCH BELOW TO REMATCH</p>
       <p class="text-slate-400 text-[10px] mb-1 font-orbitron tracking-widest uppercase">CHANGE WEAPON</p>
       <div id="go-weapons" class="w-full mb-3 flex flex-col gap-1"></div>
@@ -477,7 +484,7 @@
       ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:250, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
       harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:210, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
       rifle: { name:'RIFLE', grade:3, muzzle:40, hp:170, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
-      taser: { name:'TASER', grade:3, muzzle:30, hp:170, stun:2, range:300, damage:43, recoilForce:200, torqueKick:2.3, spinBase:0.9, mass:1.0, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
+      taser: { name:'TASER', grade:3, muzzle:30, hp:170, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
       blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:290, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
@@ -916,12 +923,20 @@
     function ffaN() { return gameMode === 'ffa' ? 3 : gameMode === 'ffa4' ? 4 : ((gameMode === 'online-host' || gameMode === 'online-guest') ? netFFA : 0); }
     function isFFA() { return ffaN() > 0; }
     function isBotSlot(i) { return soloFFA() || (netFFA && !slotConn[i]); }
-    function nameOf(i) { return i > 0 && isBotSlot(i) ? PLAYER_NAMES[i] : 'Player ' + (i + 1); }
+    function nameOf(i) { return playerNames[i] || ('Player ' + (i + 1)); }
 
     function startGame(mode) {
       AudioEngine.init();
       gameMode = mode;
-      if (mode !== 'online-guest') currentMap = selectedMap;
+      if (mode !== 'online-guest') {
+        currentMap = selectedMap;
+        const nm = getName();
+        if (mode === 'ai') playerNames = [nm, 'AI Bot'];
+        else if (mode === 'pvp') playerNames = [nm, 'Player 2'];
+        else if (mode === 'ffa' || mode === 'ffa4') playerNames = [nm, 'Red Bot', 'Green Bot', 'Blue Bot'];
+        else if (netFFA) playerNames = [nm, ...[1, 2, 3].map(i => (slotConn[i] && slotNames[i]) ? slotNames[i] : PLAYER_NAMES[i])];
+        else playerNames = [nm, netGuestName || 'Player 2'];
+      }
       const isNet = mode === 'online-host' || mode === 'online-guest';
 
       document.getElementById('menu-overlay').classList.add('opacity-0', 'pointer-events-none');
@@ -949,7 +964,7 @@
       document.getElementById('p4-half').style.display = n >= 4 ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false; wells = [];
+      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false; wells = []; kills = [0, 0, 0, 0];
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa' || mode === 'ffa4') ? 'BOT' : p2Config.name.substring(0, 4);
@@ -986,13 +1001,29 @@
       startGame(gameMode);
     }
 
-    function showGameOver(text) {
+    function showGameOver(text, wi, k) {
       document.getElementById('winner-text').innerText = text;
+      const me = gameMode === 'online-guest' ? mySlot : 0;   // which seat is you
+      document.getElementById('result-sub').innerText = (wi === undefined || gameMode === 'pvp') ? '' : (wi === me ? '🏆 YOU WON!' : 'YOU LOST');
+      const box = document.getElementById('score-list'); box.innerHTML = '';   // kills of every player
+      const n = ffaN() || 2, ks = k || kills;
+      for (let i = 0; i < n; i++) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;gap:12px;padding:4px 10px;margin:2px 0;border-radius:10px;font:700 12px Orbitron,sans-serif;background:rgba(255,255,255,0.06);color:' + (i === wi ? '#fbbf24' : '#cbd5e1');
+        const a = document.createElement('span'); a.textContent = playerNames[i] || ('Player ' + (i + 1));
+        const c = document.createElement('span'); c.textContent = '⚔ ' + (ks[i] | 0) + ((ks[i] | 0) === 1 ? ' KILL' : ' KILLS');
+        row.append(a, c); box.appendChild(row);
+      }
       document.getElementById('gameover-overlay').style.visibility = 'visible';
       document.getElementById('gameover-overlay').classList.remove('opacity-0', 'pointer-events-none');
     }
 
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
+    let myName = '', netGuestName = '', slotNames = ['', '', '', ''], playerNames = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+    const cleanName = (n) => String(n == null ? '' : n).replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 12);
+    const getName = () => myName || 'Player';
+    function setName(v) { myName = cleanName(v); savePrefs(); }
+    let kills = [0, 0, 0, 0];
     let wells = [];
     let koActive = false, koX = 0, koY = 0, koStart = 0, gameEnding = false, matchTime = 0, suddenShown = false;
     function startKO(x, y) {
@@ -1005,15 +1036,15 @@
       AudioEngine.tone('sawtooth', 120, 25, 0.5, 0.3);
     }
 
-    function triggerVictory(winnerName, loser) {
+    function triggerVictory(winnerName, loser, wi) {
       if (gameEnding) return;
       gameEnding = true;
       timeScale = 0.2;
       if (loser) startKO(loser.x, loser.y);
       setTimeout(() => {
         isRunning = false;
-        if (gameMode === 'online-host') netSend({ t: 'over', w: winnerName });
-        showGameOver(winnerName.toUpperCase() + ' WINS!');
+        if (gameMode === 'online-host') netSend({ t: 'over', w: winnerName, wi: wi, k: kills });
+        showGameOver(winnerName.toUpperCase() + ' WINS!', wi);
       }, 1800);
     }
 
@@ -1146,7 +1177,7 @@
       startGame('online-host');
     }
     function sendStart() {
-      const base = { t: 'start', p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA, map: currentMap };
+      const base = { t: 'start', names: playerNames, p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA, map: currentMap };
       if (netFFA) slotConn.forEach((c, i) => { if (c && c.open) { try { c.send({ ...base, slot: i }); } catch (e) {} } });
       else netSend(base);
     }
@@ -1157,7 +1188,7 @@
       c.on('data', (m) => {
         if (!m || typeof m !== 'object') return;
         if (m.t === 'fire') { const now = performance.now(); if (now - (c.__lastFire || 0) < 40) return; c.__lastFire = now; }   // ignore fire spam
-        if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; updateLobby(); }
+        if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; slotNames[slot] = cleanName(m.name); updateLobby(); }
         else if (m.t === 'fire') { const g = [player1, player2, player3, player4][slot]; if (gameMode === 'online-host' && g) g.shoot(); }
         else if (m.t === 'weapon' && WEAPONS[m.w]) netWeapons[slot] = m.w;
         else if (m.t === 'rematch' && gameMode === 'online-host' && !isRunning) resetGame();
@@ -1227,7 +1258,7 @@
 
     function setupConn() {
       conn.on('open', () => {
-        if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType }); }
+        if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType, name: getName() }); }
       });
       conn.on('data', (m) => { try { handleNet(m); } catch (e) {} });
       conn.on('close', onNetClose);
@@ -1249,11 +1280,12 @@
           if (netRole !== 'host') return;
           netP1Weapon = selectedWeaponType;
           netP2Weapon = WEAPONS[m.w] ? m.w : 'revolver';
+          netGuestName = cleanName(m.name);
           startGame('online-host');
           break;
         case 'start': // guest: host started a round
           if (netRole !== 'guest') return;
-          const okW = w => (WEAPONS[w] ? w : 'revolver'); netP1Weapon = okW(m.p1); netP2Weapon = okW(m.p2); netP3Weapon = okW(m.p3); netP4Weapon = okW(m.p4); netFFA = m.ffa | 0; currentMap = MAPS[m.map] ? m.map : 'arena'; mySlot = ((m.slot | 0) >= 1 && (m.slot | 0) <= 3) ? (m.slot | 0) : 1;
+          const okW = w => (WEAPONS[w] ? w : 'revolver'); netP1Weapon = okW(m.p1); netP2Weapon = okW(m.p2); netP3Weapon = okW(m.p3); netP4Weapon = okW(m.p4); netFFA = m.ffa | 0; if (Array.isArray(m.names)) playerNames = m.names.slice(0, 4).map(n => cleanName(n) || 'Player'); currentMap = MAPS[m.map] ? m.map : 'arena'; mySlot = ((m.slot | 0) >= 1 && (m.slot | 0) <= 3) ? (m.slot | 0) : 1;
           startGame('online-guest');
           break;
         case 's':
@@ -1263,7 +1295,7 @@
           if (gameMode === 'online-host' && player2) player2.shoot();
           break;
         case 'over':
-          if (netRole === 'guest') { isRunning = false; showGameOver(m.w.toUpperCase() + ' WINS!'); }
+          if (netRole === 'guest') { isRunning = false; showGameOver(String(m.w).slice(0, 20).toUpperCase() + ' WINS!', m.wi, Array.isArray(m.k) ? m.k.slice(0, 4).map(n => n | 0) : undefined); }
           break;
         case 'weapon':
           if (netRole === 'host' && WEAPONS[m.w]) netP2Weapon = m.w;
@@ -1391,7 +1423,7 @@
       return Math.hypot(px - (x1 + vx * u), py - (y1 + vy * u));
     }
 
-    function dealDamage(target, owner, dmg, px, py, kx, ky, color) {
+    function dealDamage(target, owner, dmg, px, py, kx, ky, color, noKill) {
       const ffa = isFFA();
       target.hp -= dmg;
       const att = gunByIndex(owner);
@@ -1408,9 +1440,10 @@
       updateHUD();
       if (target.hp > 0) return;
       target.alive = false;
-      if (!ffa) { triggerVictory(owner === 0 ? 'Player 1' : (gameMode === 'ai' ? 'AI Bot' : 'Player 2'), target); return; }
+      if (!noKill && owner >= 0 && owner < 4 && owner !== target.index) kills[owner]++;
+      if (!ffa) { triggerVictory(nameOf(owner), target, owner); return; }
       const left = [player1, player2, player3, player4].filter(p => p && p.alive).sort((a, c) => c.hp - a.hp);
-      if (left.length <= 1 || (!player1.alive && soloFFA())) triggerVictory(nameOf(left.length ? left[0].index : owner), target);
+      if (left.length <= 1 || (!player1.alive && soloFFA())) { const wi = left.length ? left[0].index : owner; triggerVictory(nameOf(wi), target, wi); }
       else { startKO(target.x, target.y); koActive = false; } // explosion + shake, no zoom
     }
 
@@ -1517,7 +1550,7 @@
           all.forEach(t => {
             if (!t.alive || gameEnding) return;
             t.sdAcc = (t.sdAcc || 0) + rate * dt;
-            if (t.sdAcc >= 3) { t.sdAcc -= 3; dealDamage(t, t.index === 0 ? 1 : 0, 3, t.x, t.y, 0, 0, '#ef4444'); }
+            if (t.sdAcc >= 3) { t.sdAcc -= 3; dealDamage(t, t.index === 0 ? 1 : 0, 3, t.x, t.y, 0, 0, '#ef4444', true); }
           });
         }
         all.forEach(t => {   // taser wires: a crackling wire links the shooter to the stunned victim
@@ -1656,7 +1689,7 @@
       document.getElementById('go-weapons').innerHTML = html(true);
       document.getElementById('weapon-spec').innerText = WEAPONS[selectedWeaponType].spec;
     }
-    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled })); } catch (e) {} }
+    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled, n: myName })); } catch (e) {} }
     (function loadPrefs() {
       try {
         const p = JSON.parse(localStorage.getItem('letsduel') || '{}');
@@ -1664,6 +1697,7 @@
         if (MAPS[p.m]) selectedMap = p.m;
         if (['easy', 'normal', 'pro'].includes(p.d)) aiDifficulty = p.d;
         if (p.s === false) soundEnabled = false;
+        if (typeof p.n === 'string') myName = cleanName(p.n);
       } catch (e) {}
     })();
     buildWeaponPickers();
@@ -1671,6 +1705,7 @@
       `<button class="wbtn map-b${k === selectedMap ? ' sel' : ''}" data-m="${k}" style="--gc:${MAPS[k].color}" onclick="selectMap('${k}')">${MAPS[k].name}</button>`).join('');
     selectMap(selectedMap);
     selectDifficulty(aiDifficulty);
+    document.getElementById('name-input').value = myName;
     document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
 
     // Invite link (?room=ABCD): open the online screen with the code filled in
