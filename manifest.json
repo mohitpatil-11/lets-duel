@@ -1,6 +1,6 @@
 {
-  "name": "Let’s Duel",
-  "short_name": "Let’s Duel",
+  "name": "Whirlshot",
+  "short_name": "Whirlshot",
   "description": "Mobile physics shooter. Play vs bot, locally, or online.",
   "start_url": "./",
   "scope": "./",

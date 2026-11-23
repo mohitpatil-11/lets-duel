@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Let’s Duel</title>
+  <title>Whirlshot</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#020617">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Let’s Duel">
+  <meta property="og:title" content="Whirlshot">
   <meta property="og:description" content="Physics shooter duel. Play vs a bot, locally, or online with friends!">
   <meta property="og:image" content="https://mohitpatil-11.github.io/lets-duel/icon-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Let’s Duel">
+  <meta name="apple-mobile-web-app-title" content="Whirlshot">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="description" content="Let’s Duel: a free physics shooter. Spin, aim and fire your weapon. Play vs bots, with friends on one phone, or online. 20+ weapons, 3 maps.">
+  <meta name="description" content="Whirlshot: a free physics shooter. Spin, aim and fire your weapon. Play vs bots, with friends on one phone, or online. 20+ weapons, 3 maps.">
   <meta property="og:url" content="https://mohitpatil-11.github.io/lets-duel/">
   <link rel="canonical" href="https://mohitpatil-11.github.io/lets-duel/">
-  <noscript><style>body::before{content:"Please turn on JavaScript to play Let’s Duel.";color:#fff;font:16px sans-serif;padding:24px;display:block}</style></noscript>
+  <noscript><style>body::before{content:"Please turn on JavaScript to play Whirlshot.";color:#fff;font:16px sans-serif;padding:24px;display:block}</style></noscript>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="config.js"></script>
@@ -45,6 +45,8 @@
     .infop ul{padding-left:16px;list-style:disc}
     .infop a{color:#7dd3fc;text-decoration:underline}
     .infop .closeb{align-self:center;margin-top:10px;padding:10px 26px;border-radius:14px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-family:Orbitron,sans-serif;font-weight:900;font-size:12px}
+    .shopb{padding:6px 12px;border-radius:10px;border:1px solid #475569;background:#1e293b;color:#e2e8f0;font:700 10px Orbitron,sans-serif}
+    .shopb.eq{border-color:#facc15;color:#facc15}
     .pulse-btn { animation:pulseGlow 1.8s infinite alternate; }
     @keyframes pulseGlow { 0%{box-shadow:0 0 12px rgba(245,158,11,.4);} 100%{box-shadow:0 0 25px rgba(245,158,11,.8);} }
   </style>
@@ -92,7 +94,7 @@
     <!-- Main Menu -->
     <div id="menu-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-between p-4 z-20 transition-opacity duration-300 overflow-y-auto">
       <div class="flex flex-col items-center text-center mt-2">
-        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">LET’S DUEL</h1>
+        <h1 class="font-orbitron text-3xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-transparent glow-title">WHIRLSHOT</h1>
         <p class="font-orbitron text-[10px] text-amber-400/90 tracking-widest uppercase font-semibold mt-1">Mobile Physics Arena</p>
         <p id="app-version" class="font-orbitron text-[9px] text-slate-500 mt-1"></p>
         <button id="install-btn" style="display:none" onclick="installApp()" class="mt-2 py-1.5 px-4 bg-emerald-500/20 border border-emerald-500 rounded-xl text-[10px] font-orbitron font-bold text-emerald-300 active:scale-95">⬇ INSTALL APP</button>
@@ -124,6 +126,8 @@
         <div class="text-[10px] font-orbitron text-slate-400 font-bold mb-1.5 px-1">MAP: <span id="map-spec" class="text-slate-500 text-[9px]"></span></div>
         <div id="map-grid" class="grid grid-cols-3 gap-1.5"></div>
       </div>
+
+      <button id="shop-btn" onclick="openShop()" class="w-full py-2 bg-slate-800 border border-amber-500/60 rounded-xl text-[11px] font-orbitron font-bold text-amber-300 active:scale-95">🛒 SHOP</button>
 
       <div class="flex gap-2 w-full">
         <button onclick="showInfo('how')" class="flex-1 py-2 bg-slate-800 border border-slate-700 rounded-xl text-[10px] font-orbitron font-bold text-slate-300 active:scale-95">❓ HOW TO PLAY</button>
@@ -462,30 +466,30 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:170, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
-      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:170, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
-      smg: { name:'SMG', grade:3, muzzle:28, hp:170, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
-      sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:250, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
-      plasma: { name:'PLASMA', grade:1, burn:1.5, muzzle:30, hp:250, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: BURNS EVEN THROUGH A SHIELD)' },
-      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:13, hitTo:68, hitW:5, bladeLen:58, hp:150, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
+      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:210, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
+      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:210, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
+      smg: { name:'SMG', grade:3, muzzle:28, hp:210, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
+      sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:270, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
+      plasma: { name:'PLASMA', grade:1, burn:1.5, muzzle:30, hp:270, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: BURNS EVEN THROUGH A SHIELD)' },
+      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:13, hitTo:68, hitW:5, bladeLen:58, hp:200, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
       shield: { name:'SHIELD', grade:1, muzzle:28, damage:16, recoilForce:450, torqueKick:3.967, spinBase:1, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:350, shield:true, color:'#38bdf8', spec:'SHIELD (BLOCKS SHOTS AND BLADES FROM THE FRONT)' },
-      rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:250, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
-      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:30, hitTo:52, hitW:18, style:'axe', bladeLen:44, hp:150, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:210, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
-      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:76, hitTo:98, hitW:6, style:'spear', hp:150, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
-      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:290, damage:28, recoilForce:520, torqueKick:3.967, spinBase:1, mass:0.8, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
-      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:290, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
-      vampire: { name:'VAMPIRE', grade:0, hp:230, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
-      tesla: { name:'TESLA', grade:0, muzzle:34, hp:290, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
-      cryo: { name:'CRYO', grade:1, muzzle:32, hp:250, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
-      hammer: { name:'HAMMER', grade:2, hp:150, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
-      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:170, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
-      railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:290, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
-      ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:250, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
-      harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:210, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
-      rifle: { name:'RIFLE', grade:3, muzzle:40, hp:170, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
-      taser: { name:'TASER', grade:3, muzzle:30, hp:170, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
-      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:290, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
+      rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:270, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
+      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:30, hitTo:52, hitW:18, style:'axe', bladeLen:44, hp:200, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:240, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
+      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:76, hitTo:98, hitW:6, style:'spear', hp:200, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
+      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:300, damage:28, recoilForce:520, torqueKick:3.967, spinBase:1, mass:0.8, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
+      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:300, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
+      vampire: { name:'VAMPIRE', grade:0, hp:260, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
+      tesla: { name:'TESLA', grade:0, muzzle:34, hp:300, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
+      cryo: { name:'CRYO', grade:1, muzzle:32, hp:270, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
+      hammer: { name:'HAMMER', grade:2, hp:200, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
+      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:210, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
+      railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:300, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
+      ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:270, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
+      harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:240, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
+      rifle: { name:'RIFLE', grade:3, muzzle:40, hp:210, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
+      taser: { name:'TASER', grade:3, muzzle:30, hp:210, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
+      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:300, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
 
@@ -532,13 +536,15 @@
         <li>Online: one player taps HOST and shares the 4-letter code or invite link, the others tap JOIN.</li>
         <li>Maps: Arena (normal gravity), Moon (low), Jupiter (heavy).</li></ul>
         <h3>KEYBOARD</h3><ul><li>Player 1: W or Space. Player 2: Arrow Up.</li></ul>`;
-      const about = `<p><b>Let’s Duel</b> is a free fan-made physics duel game, inspired by <i>Pistol Duel</i> by Kayac. It is an unofficial project and is not affiliated with or endorsed by Kayac.</p>
+      const about = `<p><b>Whirlshot</b> is a physics duel game: your weapon spins, every shot pushes you back, and the last one standing wins.</p>
+        <p style="color:#94a3b8">© 2026 Mohit Patil. All rights reserved.</p>
         <h3>PRIVACY</h3><ul>
-        <li>The game has no accounts, no ads and no chat, and it does not collect your personal data.</li>
-        <li>Your choices (weapon, map, sound) are saved only on your own device.</li>
+        <li>No accounts, no ads and no chat. The game does not collect your personal data.</li>
+        <li>Your choices, coins and skins are saved only on your own device.</li>
         <li>Like any website, it loads fonts and scripts from Google Fonts, Tailwind and unpkg, which can see your IP address.</li>
-        <li><b>Online play is peer-to-peer.</b> Your device connects to the other players, so they can technically see your IP address. A free matchmaking server (PeerJS) and relay (Metered) help devices find each other. Only share your room code with people you trust.</li></ul>
-        <h3>FEEDBACK</h3><p>Found a bug or have an idea? <a href="https://github.com/mohitpatil-11/lets-duel/issues" target="_blank" rel="noopener">Open an issue on GitHub</a>.</p>
+        <li><b>Online play is peer-to-peer.</b> Your device connects to the other players, so they can technically see your IP address. A matchmaking server (PeerJS) and a relay (Metered) help devices find each other. Only share your room code with people you trust.</li></ul>
+        <h3>LEGAL</h3><p><a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" rel="noopener">Terms of use</a></p>
+        <h3>FEEDBACK</h3><p>Found a bug or have an idea? <a href="https://github.com/mohitpatil-11/lets-duel/issues" target="_blank" rel="noopener">Tell us on GitHub</a>.</p>
         <p style="color:#64748b">Version ${APP_VERSION}</p>`;
       document.getElementById('info-title').innerText = which === 'how' ? 'HOW TO PLAY' : 'ABOUT & PRIVACY';
       document.getElementById('info-body').innerHTML = which === 'how' ? how : about;
@@ -629,7 +635,7 @@
       draw() {
         ctx.beginPath();
         this.trail.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
-        ctx.strokeStyle = AIM_COLORS[this.owner !== undefined ? this.owner : (this.isPlayer1 ? 0 : 1)];
+        ctx.strokeStyle = hexA(accOf(this.owner !== undefined ? this.owner : (this.isPlayer1 ? 0 : 1)), 0.7);
         ctx.lineWidth = this.radius * 1.5;
         ctx.stroke();
         ctx.fillStyle = this.config.color;
@@ -769,6 +775,8 @@
         }
       }
 
+      acc() { return this.accent || GUN_COLORS[this.index]; }
+
       shoot() {
         if (!this.alive || !isRunning) return;
         if (this.reloading || this.cooldown > 0 || this.stunT > 0) return;
@@ -818,7 +826,7 @@
         if (!this.alive) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.strokeStyle = AIM_COLORS[this.index];
+        ctx.strokeStyle = hexA(this.acc(), 0.7);
         ctx.lineWidth = 1.2;
         ctx.setLineDash([3, 3]);
         ctx.beginPath(); ctx.moveTo(0, 0);
@@ -831,39 +839,39 @@
         if (this.config.melee && this.config.style === 'hammer') { // war hammer: long handle + heavy square head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2.5, BL + 4, 5);
-          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 14, 6);
+          ctx.fillStyle = this.acc(); ctx.fillRect(-8, -3, 14, 6);
           ctx.fillStyle = '#94a3b8'; ctx.fillRect(BL - 8, -13, 16, 26);
           ctx.fillStyle = '#cbd5e1'; ctx.fillRect(BL - 8, -13, 16, 5);
           ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5; ctx.strokeRect(BL - 8, -13, 16, 26);
         } else if (this.config.melee && this.config.style === 'vampire') { // vampire blade: bat-wing guard + curved crimson blade
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#1f2937'; ctx.fillRect(-14, -3, 12, 6);
-          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -2, 6, 4);
+          ctx.fillStyle = this.acc(); ctx.fillRect(-8, -2, 6, 4);
           poly([[6, -13], [14, -7], [10, 0], [14, 7], [6, 13], [8, 0]], '#7f1d1d');
           ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.moveTo(10, -3); ctx.quadraticCurveTo(BL * 0.6, -12, BL + 8, 0); ctx.quadraticCurveTo(BL * 0.6, 4, 10, 3); ctx.closePath(); ctx.fill();
           ctx.strokeStyle = '#fecaca'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(10, -3); ctx.quadraticCurveTo(BL * 0.6, -12, BL + 8, 0); ctx.stroke();
         } else if (this.config.melee && this.config.style === 'spear') { // spear: long shaft + pointed head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2, BL + 2, 4);
-          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
+          ctx.fillStyle = this.acc(); ctx.fillRect(-8, -3, 16, 6);
           ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.moveTo(BL - 8, -6); ctx.lineTo(BL + 14, 0); ctx.lineTo(BL - 8, 6); ctx.closePath(); ctx.fill();
         } else if (this.config.melee && this.config.style === 'axe') { // axe: wooden handle + double-bladed head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -3, BL + 2, 6);
-          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
+          ctx.fillStyle = this.acc(); ctx.fillRect(-8, -3, 16, 6);
           ctx.fillStyle = '#cbd5e1'; ctx.beginPath();
           ctx.moveTo(BL - 18, -3); ctx.lineTo(BL - 10, -22); ctx.lineTo(BL + 8, -18); ctx.lineTo(BL + 8, 18); ctx.lineTo(BL - 10, 22); ctx.lineTo(BL - 18, 3); ctx.closePath(); ctx.fill();
           ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5; ctx.stroke();
         } else if (this.config.melee) { // sword: pommel, grip, crossguard, pointed blade
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#334155'; ctx.fillRect(-14, -4, 8, 8);
-          ctx.fillStyle = GUN_COLORS[this.index]; ctx.fillRect(-8, -3, 16, 6);
+          ctx.fillStyle = this.acc(); ctx.fillRect(-8, -3, 16, 6);
           ctx.fillStyle = '#facc15'; ctx.fillRect(8, -11, 5, 22);
           ctx.fillStyle = '#e2e8f0'; ctx.beginPath();
           ctx.moveTo(13, -5); ctx.lineTo(BL, -2); ctx.lineTo(BL + 10, 0); ctx.lineTo(BL, 2); ctx.lineTo(13, 5); ctx.closePath(); ctx.fill();
           ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(BL, 0); ctx.stroke();
         } else {
-          (GUN_ART[this.config.name.toLowerCase()] || GUN_ART.revolver)(GUN_COLORS[this.index], this);
+          (GUN_ART[this.config.name.toLowerCase()] || GUN_ART.revolver)(this.acc(), this);
         }
         if (this.config.shield) { ctx.fillStyle = 'rgba(125,211,252,0.18)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(0, 0, 34, -1.1, 1.1); ctx.stroke(); ctx.lineCap = 'butt'; }
         ctx.restore();
@@ -936,6 +944,8 @@
         else if (mode === 'ffa' || mode === 'ffa4') playerNames = [nm, 'Red Bot', 'Green Bot', 'Blue Bot'];
         else if (netFFA) playerNames = [nm, ...[1, 2, 3].map(i => (slotConn[i] && slotNames[i]) ? slotNames[i] : PLAYER_NAMES[i])];
         else playerNames = [nm, netGuestName || 'Player 2'];
+        playerSkinIds = [skinId, null, null, null];
+        if (mode === 'online-host') { if (netFFA) { for (let i = 1; i < 4; i++) playerSkinIds[i] = slotConn[i] ? slotSkins[i] : null; } else playerSkinIds[1] = netGuestSkin; }
       }
       const isNet = mode === 'online-host' || mode === 'online-guest';
 
@@ -960,11 +970,12 @@
       if (player3) { player3.angle = -Math.PI / 2; player3.spinSpeed = 1.5; }
       if (player4) { player4.angle = -Math.PI / 2; player4.spinSpeed = -1.5; }
       [player1, player2, player3, player4].forEach(g => { if (g) { g.angle = Math.atan2(g.y - H / 2, g.x - W / 2); g.spinSpeed = (g.spinSpeed >= 0 ? 1 : -1) * 4; } });   // start facing outwards, then spin up fast so it sweeps past the enemies within a second or two
+      [player1, player2, player3, player4].forEach((g, i) => { if (g) g.accent = skinColor(playerSkinIds[i]) || undefined; });
       document.getElementById('p3-hud').style.display = n >= 3 ? 'flex' : 'none';
       document.getElementById('p4-half').style.display = n >= 4 ? 'flex' : 'none';
 
       bullets = []; particles = []; combatTexts = []; arenaPickups = [];
-      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false; wells = []; kills = [0, 0, 0, 0];
+      koActive = false; gameEnding = false; matchTime = 0; suddenShown = false; wells = []; kills = [0, 0, 0, 0]; rewarded = false;
 
       document.getElementById('p1-gun-name').innerText = p1Config.name.substring(0, 4);
       document.getElementById('p2-gun-name').innerText = (mode === 'ai' || mode === 'ffa' || mode === 'ffa4') ? 'BOT' : p2Config.name.substring(0, 4);
@@ -1005,6 +1016,12 @@
       document.getElementById('winner-text').innerText = text;
       const me = gameMode === 'online-guest' ? mySlot : 0;   // which seat is you
       document.getElementById('result-sub').innerText = (wi === undefined || gameMode === 'pvp') ? '' : (wi === me ? '🏆 YOU WON!' : 'YOU LOST');
+      if (!rewarded && wi !== undefined && gameMode !== 'pvp') {   // coins for playing
+        rewarded = true;
+        const earn = 5 + ((k || kills)[me] | 0) * 10 + (wi === me ? 20 : 0);
+        coins += earn; savePrefs(); updateCoinUI();
+        document.getElementById('result-sub').innerText += '   +' + earn + ' 🪙';
+      }
       const box = document.getElementById('score-list'); box.innerHTML = '';   // kills of every player
       const n = ffaN() || 2, ks = k || kills;
       for (let i = 0; i < n; i++) {
@@ -1019,6 +1036,41 @@
     }
 
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
+    const SKINS = [
+      { id: 'classic', name: 'CLASSIC', color: null, cost: 0 },
+      { id: 'crimson', name: 'CRIMSON', color: '#ef4444', cost: 60 },
+      { id: 'ocean', name: 'OCEAN', color: '#38bdf8', cost: 60 },
+      { id: 'forest', name: 'FOREST', color: '#22c55e', cost: 60 },
+      { id: 'violet', name: 'VIOLET', color: '#a78bfa', cost: 120 },
+      { id: 'sunset', name: 'SUNSET', color: '#fb923c', cost: 120 },
+      { id: 'pink', name: 'NEON PINK', color: '#f472b6', cost: 200 },
+      { id: 'gold', name: 'GOLD', color: '#facc15', cost: 300 },
+      { id: 'ice', name: 'ICE WHITE', color: '#e0f2fe', cost: 400 }
+    ];
+    let coins = 0, ownedSkins = ['classic'], skinId = 'classic', playerSkinIds = ['classic', null, null, null], slotSkins = [null, null, null, null], netGuestSkin = null, rewarded = false;
+    const validSkin = (id) => (SKINS.some(s => s.id === id) ? id : null);
+    const skinColor = (id) => { const k = SKINS.find(s => s.id === id); return k ? k.color : null; };
+    const hexA = (hex, a) => { const h = String(hex).replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16) || 0; return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
+    function accOf(i) { const g = gunByIndex(i); return g ? g.acc() : (GUN_COLORS[i] || '#f59e0b'); }
+    function updateCoinUI() { const b = document.getElementById('shop-btn'); if (b) b.innerText = '🛒 SHOP  ·  🪙 ' + coins; }
+    function openShop() {
+      document.getElementById('info-title').innerText = 'SHOP  🪙 ' + coins;
+      const rows = SKINS.map(k => {
+        const owned = ownedSkins.includes(k.id), eq = skinId === k.id, can = owned || coins >= k.cost;
+        const label = eq ? 'EQUIPPED' : owned ? 'EQUIP' : '🪙 ' + k.cost;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #334155;border-radius:12px;background:#0f172a">
+          <span style="width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:${k.color || 'linear-gradient(90deg,#f59e0b,#ef4444)'}"></span>
+          <span style="flex:1;font:700 12px Orbitron,sans-serif;color:#e2e8f0">${k.name}</span>
+          <button class="shopb${eq ? ' eq' : ''}" style="${can ? '' : 'opacity:.4'}" onclick="shopAction('${k.id}')">${label}</button></div>`;
+      }).join('');
+      document.getElementById('info-body').innerHTML = `<p>Earn coins by playing: <b>+5</b> per match, <b>+10</b> per kill and <b>+20</b> for a win. Skins change your weapon colour, aim line and shot trails. They never change your strength.</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">${rows}</div>`;
+      document.getElementById('info-panel').style.display = 'flex';
+    }
+    function shopAction(id) {
+      const k = SKINS.find(x => x.id === id); if (!k) return;
+      if (!ownedSkins.includes(id)) { if (coins < k.cost) return; coins -= k.cost; ownedSkins.push(id); }
+      skinId = id; savePrefs(); updateCoinUI(); openShop();
+    }
     let myName = '', netGuestName = '', slotNames = ['', '', '', ''], playerNames = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
     const cleanName = (n) => String(n == null ? '' : n).replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 12);
     const getName = () => myName || 'Player';
@@ -1100,7 +1152,9 @@
     // Get a free key at https://www.metered.ca/tools/openrelay/ and paste it here.
     const METERED_APP = 'pistol-duel-mohit'; // your Metered app name (from the dashboard)
     const METERED_API_KEY = (window.PD_CONFIG && window.PD_CONFIG.meteredKey) || '';
+    function peerServerOpts() { const c = window.PD_CONFIG && window.PD_CONFIG.peerServer; return (c && typeof c === 'object') ? c : {}; }
     async function getIce() {
+      if (window.PD_CONFIG && Array.isArray(window.PD_CONFIG.iceServers) && window.PD_CONFIG.iceServers.length) return window.PD_CONFIG.iceServers;
       const fallback = [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
@@ -1130,7 +1184,7 @@
     function copyInvite() {
       const code = document.getElementById('room-code').innerText;
       if (code.length !== 4) return;
-      const text = 'Join my Let’s Duel match! Room code: ' + code + ' ' + location.origin + location.pathname + '?room=' + code;
+      const text = 'Join my Whirlshot match! Room code: ' + code + ' ' + location.origin + location.pathname + '?room=' + code;
       const done = () => netStatus('Invite copied! Paste it in Discord, WhatsApp or anywhere.');
       const fallback = () => {
         const ta = document.createElement('textarea');
@@ -1147,9 +1201,9 @@
       const code = document.getElementById('room-code').innerText;
       if (code.length !== 4) return;
       const url = location.origin + location.pathname + '?room=' + code;
-      const text = 'Join my Let’s Duel match! Room code: ' + code;
+      const text = 'Join my Whirlshot match! Room code: ' + code;
       if (navigator.share) {
-        navigator.share({ title: 'Let’s Duel', text, url }).catch(() => {});
+        navigator.share({ title: 'Whirlshot', text, url }).catch(() => {});
       } else {
         copyInvite();
       }
@@ -1177,7 +1231,7 @@
       startGame('online-host');
     }
     function sendStart() {
-      const base = { t: 'start', names: playerNames, p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA, map: currentMap };
+      const base = { t: 'start', names: playerNames, skins: playerSkinIds, p1: netP1Weapon, p2: netP2Weapon, p3: netP3Weapon, p4: netP4Weapon, ffa: netFFA, map: currentMap };
       if (netFFA) slotConn.forEach((c, i) => { if (c && c.open) { try { c.send({ ...base, slot: i }); } catch (e) {} } });
       else netSend(base);
     }
@@ -1188,7 +1242,7 @@
       c.on('data', (m) => {
         if (!m || typeof m !== 'object') return;
         if (m.t === 'fire') { const now = performance.now(); if (now - (c.__lastFire || 0) < 40) return; c.__lastFire = now; }   // ignore fire spam
-        if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; slotNames[slot] = cleanName(m.name); updateLobby(); }
+        if (m.t === 'hello') { netWeapons[slot] = WEAPONS[m.w] ? m.w : 'revolver'; slotNames[slot] = cleanName(m.name); slotSkins[slot] = validSkin(m.skin); updateLobby(); }
         else if (m.t === 'fire') { const g = [player1, player2, player3, player4][slot]; if (gameMode === 'online-host' && g) g.shoot(); }
         else if (m.t === 'weapon' && WEAPONS[m.w]) netWeapons[slot] = m.w;
         else if (m.t === 'rematch' && gameMode === 'online-host' && !isRunning) resetGame();
@@ -1219,7 +1273,7 @@
       netRole = 'host'; netFFA = ffa === 4 ? 4 : (ffa ? 3 : 0);
       const code = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 4).toUpperCase().padEnd(4, 'X');
       netStatus('Creating room...');
-      peer = new Peer('pduel-' + code, { config: { iceServers: await getIce() } });
+      peer = new Peer('pduel-' + code, { ...peerServerOpts(), config: { iceServers: await getIce() } });
       peer.on('open', () => {
         document.getElementById('room-code').innerText = code;
         document.getElementById('share-btn').style.display = 'flex';
@@ -1247,7 +1301,7 @@
       cleanupNet();
       netRole = 'guest';
       netStatus('Connecting...');
-      peer = new Peer(undefined, { config: { iceServers: await getIce() } });
+      peer = new Peer(undefined, { ...peerServerOpts(), config: { iceServers: await getIce() } });
       peer.on('open', () => {
         conn = peer.connect('pduel-' + code, { serialization: 'json' });
         setupConn();
@@ -1258,7 +1312,7 @@
 
     function setupConn() {
       conn.on('open', () => {
-        if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType, name: getName() }); }
+        if (netRole === 'guest') { netStatus('Connected! Waiting for host...'); netSend({ t: 'hello', w: selectedWeaponType, name: getName(), skin: skinId }); }
       });
       conn.on('data', (m) => { try { handleNet(m); } catch (e) {} });
       conn.on('close', onNetClose);
@@ -1280,12 +1334,12 @@
           if (netRole !== 'host') return;
           netP1Weapon = selectedWeaponType;
           netP2Weapon = WEAPONS[m.w] ? m.w : 'revolver';
-          netGuestName = cleanName(m.name);
+          netGuestName = cleanName(m.name); netGuestSkin = validSkin(m.skin);
           startGame('online-host');
           break;
         case 'start': // guest: host started a round
           if (netRole !== 'guest') return;
-          const okW = w => (WEAPONS[w] ? w : 'revolver'); netP1Weapon = okW(m.p1); netP2Weapon = okW(m.p2); netP3Weapon = okW(m.p3); netP4Weapon = okW(m.p4); netFFA = m.ffa | 0; if (Array.isArray(m.names)) playerNames = m.names.slice(0, 4).map(n => cleanName(n) || 'Player'); currentMap = MAPS[m.map] ? m.map : 'arena'; mySlot = ((m.slot | 0) >= 1 && (m.slot | 0) <= 3) ? (m.slot | 0) : 1;
+          const okW = w => (WEAPONS[w] ? w : 'revolver'); netP1Weapon = okW(m.p1); netP2Weapon = okW(m.p2); netP3Weapon = okW(m.p3); netP4Weapon = okW(m.p4); netFFA = m.ffa | 0; if (Array.isArray(m.skins)) playerSkinIds = m.skins.slice(0, 4).map(validSkin); if (Array.isArray(m.names)) playerNames = m.names.slice(0, 4).map(n => cleanName(n) || 'Player'); currentMap = MAPS[m.map] ? m.map : 'arena'; mySlot = ((m.slot | 0) >= 1 && (m.slot | 0) <= 3) ? (m.slot | 0) : 1;
           startGame('online-guest');
           break;
         case 's':
@@ -1689,7 +1743,7 @@
       document.getElementById('go-weapons').innerHTML = html(true);
       document.getElementById('weapon-spec').innerText = WEAPONS[selectedWeaponType].spec;
     }
-    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled, n: myName })); } catch (e) {} }
+    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled, n: myName, c: coins, o: ownedSkins, k: skinId })); } catch (e) {} }
     (function loadPrefs() {
       try {
         const p = JSON.parse(localStorage.getItem('letsduel') || '{}');
@@ -1698,6 +1752,9 @@
         if (['easy', 'normal', 'pro'].includes(p.d)) aiDifficulty = p.d;
         if (p.s === false) soundEnabled = false;
         if (typeof p.n === 'string') myName = cleanName(p.n);
+        if (Number.isFinite(p.c)) coins = Math.max(0, p.c | 0);
+        if (Array.isArray(p.o)) ownedSkins = ['classic', ...p.o.filter(id => id !== 'classic' && SKINS.some(s => s.id === id))];
+        if (ownedSkins.includes(p.k)) skinId = p.k;
       } catch (e) {}
     })();
     buildWeaponPickers();
@@ -1706,6 +1763,7 @@
     selectMap(selectedMap);
     selectDifficulty(aiDifficulty);
     document.getElementById('name-input').value = myName;
+    updateCoinUI();
     document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
 
     // Invite link (?room=ABCD): open the online screen with the code filled in
