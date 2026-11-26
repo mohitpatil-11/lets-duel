@@ -36,6 +36,7 @@
     .wbtn{padding:7px 1px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#cbd5e1;font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden}
     .wbtn.wc{padding:5px 1px;font-size:8px}
     .wbtn:active{transform:scale(.95)}
+    .wbtn.locked{opacity:.55;font-size:8px}
     .wbtn.sel{border:2px solid var(--gc);background:rgba(255,255,255,.16);background:color-mix(in srgb, var(--gc) 28%, #0f172a);color:#fff}
     #gameover-overlay > * { flex-shrink: 0; }
     .infop{position:absolute;inset:0;z-index:40;background:#020617;overflow-y:auto;padding:16px;flex-direction:column;gap:8px}
@@ -528,7 +529,7 @@
         <li>Every shot pushes you back and changes your spin, so use it to move too.</li>
         <li>Last one standing wins. Pickups: green <b>+</b> heals, <b>⚡</b> refills ammo.</li></ul>
         <h3>WEAPONS</h3><ul>
-        <li>Four grades: <b>Special &gt; Grade 1 &gt; Grade 2 &gt; Grade 3</b>. Higher grades have more health. Tap a weapon to see what it does.</li>
+        <li>Four grades: <b>Special &gt; Grade 1 &gt; Grade 2 &gt; Grade 3</b>. Higher grades have more health. Tap a weapon to see what it does. Locked weapons (🔒) are unlocked with coins in the 🛒 Shop: Grade 3 costs 100 and each higher grade costs 10 times more.</li>
         <li><b>Close combat</b> (sword, axe, spear, hammer, vampire): only the blade or head hurts. Tap to lunge.</li>
         <li><b>Shield</b> blocks shots and blades from the front, but burn, stun and freeze still get through.</li></ul>
         <h3>MODES AND MAPS</h3><ul>
@@ -559,8 +560,9 @@
     }
 
     function selectWeapon(type) {
+      if (!ownedWeapons.includes(type)) { openShop('weapons'); return; }   // locked: go to the shop
       selectedWeaponType = type; savePrefs();
-      document.querySelectorAll('.wbtn').forEach(b => b.classList.toggle('sel', b.dataset.w === type));
+      document.querySelectorAll('.wbtn[data-w]').forEach(b => b.classList.toggle('sel', b.dataset.w === type));
       document.getElementById('weapon-spec').innerText = WEAPONS[type].spec;
       if (netRole === 'guest') netSend({ t: 'weapon', w: type });
     }
@@ -938,6 +940,7 @@
       gameMode = mode;
       if (mode !== 'online-guest') {
         currentMap = selectedMap;
+        if (!ownedWeapons.includes(selectedWeaponType)) selectedWeaponType = 'revolver';   // never start with a weapon you do not own
         const nm = getName();
         if (mode === 'ai') playerNames = [nm, 'AI Bot'];
         else if (mode === 'pvp') playerNames = [nm, 'Player 2'];
@@ -1047,24 +1050,45 @@
       { id: 'gold', name: 'GOLD', color: '#facc15', cost: 300 },
       { id: 'ice', name: 'ICE WHITE', color: '#e0f2fe', cost: 400 }
     ];
+    let ownedWeapons = ['revolver'];
     let coins = 0, ownedSkins = ['classic'], skinId = 'classic', playerSkinIds = ['classic', null, null, null], slotSkins = [null, null, null, null], netGuestSkin = null, rewarded = false;
     const validSkin = (id) => (SKINS.some(s => s.id === id) ? id : null);
     const skinColor = (id) => { const k = SKINS.find(s => s.id === id); return k ? k.color : null; };
     const hexA = (hex, a) => { const h = String(hex).replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16) || 0; return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
     function accOf(i) { const g = gunByIndex(i); return g ? g.acc() : (GUN_COLORS[i] || '#f59e0b'); }
     function updateCoinUI() { const b = document.getElementById('shop-btn'); if (b) b.innerText = '🛒 SHOP  ·  🪙 ' + coins; }
-    function openShop() {
-      document.getElementById('info-title').innerText = 'SHOP  🪙 ' + coins;
-      const rows = SKINS.map(k => {
-        const owned = ownedSkins.includes(k.id), eq = skinId === k.id, can = owned || coins >= k.cost;
-        const label = eq ? 'EQUIPPED' : owned ? 'EQUIP' : '🪙 ' + k.cost;
-        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #334155;border-radius:12px;background:#0f172a">
-          <span style="width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:${k.color || 'linear-gradient(90deg,#f59e0b,#ef4444)'}"></span>
-          <span style="flex:1;font:700 12px Orbitron,sans-serif;color:#e2e8f0">${k.name}</span>
-          <button class="shopb${eq ? ' eq' : ''}" style="${can ? '' : 'opacity:.4'}" onclick="shopAction('${k.id}')">${label}</button></div>`;
-      }).join('');
-      document.getElementById('info-body').innerHTML = `<p>Earn coins by playing: <b>+5</b> per match, <b>+10</b> per kill and <b>+20</b> for a win. Skins change your weapon colour, aim line and shot trails. They never change your strength.</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">${rows}</div>`;
+    let shopTab = 'weapons';
+    const WEAPON_PRICES = { 3: 100, 2: 1000, 1: 5000, 0: 25000 };   // Grade 3 = 100, Grade 2 = 1,000, Grade 1 = 5,000, Special = 25,000
+    const weaponPrice = (k) => WEAPON_PRICES[WEAPONS[k].grade] || 100;
+    function openShop(tab) {
+      if (tab) shopTab = tab;
+      document.getElementById('info-title').innerText = 'SHOP  🪙 ' + coins.toLocaleString();
+      const tabs = `<div style="display:flex;gap:8px;margin-bottom:6px"><button class="shopb${shopTab === 'weapons' ? ' eq' : ''}" style="flex:1" onclick="openShop('weapons')">WEAPONS</button><button class="shopb${shopTab === 'skins' ? ' eq' : ''}" style="flex:1" onclick="openShop('skins')">SKINS</button></div>`;
+      let body;
+      if (shopTab === 'weapons') {
+        body = `<p>Unlock weapons with coins. Prices: Grade 3 costs 100, Grade 2 costs 1,000, Grade 1 costs 5,000 and Special grade costs 25,000. You start with the Revolver.</p>` + [3, 2, 1, 0].map(g => {
+          const G = GRADES.find(x => x.g === g), keys = Object.keys(WEAPONS).filter(k => WEAPONS[k].grade === g);
+          const rows = keys.map(k => {
+            const owned = ownedWeapons.includes(k), eq = selectedWeaponType === k, price = weaponPrice(k), can = owned || coins >= price;
+            const label = eq ? 'SELECTED' : owned ? 'SELECT' : '🪙 ' + price.toLocaleString();
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:#0f172a"><span style="flex:1;min-width:0"><span style="display:block;font:700 11px Orbitron,sans-serif;color:#e2e8f0">${WEAPONS[k].name}</span><span style="display:block;font-size:9px;color:#94a3b8;line-height:1.3">${WEAPONS[k].spec}</span></span><button class="shopb${eq ? ' eq' : ''}" style="${can ? '' : 'opacity:.4'}" onclick="weaponAction('${k}')">${label}</button></div>`;
+          }).join('');
+          return `<div style="border:1.5px solid ${G.color};border-radius:14px;padding:6px;margin-top:8px"><div style="font:900 9px Orbitron,sans-serif;letter-spacing:.14em;color:${G.color};margin-bottom:4px">${G.name}  ·  🪙 ${weaponPrice(keys[0]).toLocaleString()} each</div><div style="display:flex;flex-direction:column;gap:4px">${rows}</div></div>`;
+        }).join('');
+      } else {
+        body = `<p>Skins change your weapon colour, aim line and shot trails. They never change your strength.</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">` + SKINS.map(k => {
+          const owned = ownedSkins.includes(k.id), eq = skinId === k.id, can = owned || coins >= k.cost;
+          const label = eq ? 'EQUIPPED' : owned ? 'EQUIP' : '🪙 ' + k.cost;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #334155;border-radius:12px;background:#0f172a"><span style="width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:${k.color || 'linear-gradient(90deg,#f59e0b,#ef4444)'}"></span><span style="flex:1;font:700 12px Orbitron,sans-serif;color:#e2e8f0">${k.name}</span><button class="shopb${eq ? ' eq' : ''}" style="${can ? '' : 'opacity:.4'}" onclick="shopAction('${k.id}')">${label}</button></div>`;
+        }).join('') + `</div>`;
+      }
+      document.getElementById('info-body').innerHTML = tabs + `<p style="color:#7dd3fc">Earn coins by playing: +5 per match, +10 per kill, +20 for a win.</p>` + body;
       document.getElementById('info-panel').style.display = 'flex';
+    }
+    function weaponAction(k) {
+      if (!WEAPONS[k]) return;
+      if (!ownedWeapons.includes(k)) { const price = weaponPrice(k); if (coins < price) return; coins -= price; ownedWeapons.push(k); }
+      selectedWeaponType = k; savePrefs(); updateCoinUI(); buildWeaponPickers(); openShop();
     }
     function shopAction(id) {
       const k = SKINS.find(x => x.id === id); if (!k) return;
@@ -1736,14 +1760,14 @@
       const html = (compact) => GRADES.map(G => {
         const keys = Object.keys(WEAPONS).filter(k => WEAPONS[k].grade === G.g);
         return `<div class="gbox" style="--gc:${G.color}"><div class="gtitle">${G.name}</div><div class="ggrid">` +
-          keys.map(k => `<button class="wbtn${compact ? ' wc' : ''}${k === selectedWeaponType ? ' sel' : ''}" data-w="${k}" style="--gc:${G.color}" onclick="selectWeapon('${k}')">${WEAPONS[k].name}</button>`).join('') +
+          keys.map(k => { const own = ownedWeapons.includes(k); return `<button class="wbtn${compact ? ' wc' : ''}${k === selectedWeaponType ? ' sel' : ''}${own ? '' : ' locked'}" data-w="${k}" style="--gc:${G.color}" onclick="selectWeapon('${k}')">${own ? '' : '🔒 '}${WEAPONS[k].name}</button>`; }).join('') +
           `</div></div>`;
       }).join('');
       document.getElementById('weapon-grid').innerHTML = html(false);
       document.getElementById('go-weapons').innerHTML = html(true);
       document.getElementById('weapon-spec').innerText = WEAPONS[selectedWeaponType].spec;
     }
-    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled, n: myName, c: coins, o: ownedSkins, k: skinId })); } catch (e) {} }
+    function savePrefs() { try { localStorage.setItem('letsduel', JSON.stringify({ w: selectedWeaponType, m: selectedMap, d: aiDifficulty, s: soundEnabled, n: myName, c: coins, o: ownedSkins, k: skinId, ow: ownedWeapons })); } catch (e) {} }
     (function loadPrefs() {
       try {
         const p = JSON.parse(localStorage.getItem('letsduel') || '{}');
@@ -1755,8 +1779,10 @@
         if (Number.isFinite(p.c)) coins = Math.max(0, p.c | 0);
         if (Array.isArray(p.o)) ownedSkins = ['classic', ...p.o.filter(id => id !== 'classic' && SKINS.some(s => s.id === id))];
         if (ownedSkins.includes(p.k)) skinId = p.k;
+        if (Array.isArray(p.ow)) ownedWeapons = ['revolver', ...p.ow.filter(id => id !== 'revolver' && WEAPONS[id])];
       } catch (e) {}
     })();
+    if (!ownedWeapons.includes(selectedWeaponType)) selectedWeaponType = 'revolver';
     buildWeaponPickers();
     document.getElementById('map-grid').innerHTML = Object.keys(MAPS).map(k =>
       `<button class="wbtn map-b${k === selectedMap ? ' sel' : ''}" data-m="${k}" style="--gc:${MAPS[k].color}" onclick="selectMap('${k}')">${MAPS[k].name}</button>`).join('');
