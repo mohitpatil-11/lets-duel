@@ -467,30 +467,30 @@
     let player1, player2, player3 = null, player4 = null;
 
     const WEAPONS = {
-      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:210, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
-      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:210, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
-      smg: { name:'SMG', grade:3, muzzle:28, hp:210, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
-      sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:270, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
-      plasma: { name:'PLASMA', grade:1, burn:1.5, muzzle:30, hp:270, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: BURNS EVEN THROUGH A SHIELD)' },
-      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:13, hitTo:68, hitW:5, bladeLen:58, hp:200, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
-      shield: { name:'SHIELD', grade:1, muzzle:28, damage:16, recoilForce:450, torqueKick:3.967, spinBase:1, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:350, shield:true, color:'#38bdf8', spec:'SHIELD (BLOCKS SHOTS AND BLADES FROM THE FRONT)' },
-      rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:270, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
-      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:30, hitTo:52, hitW:18, style:'axe', bladeLen:44, hp:200, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
-      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:240, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
-      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:76, hitTo:98, hitW:6, style:'spear', hp:200, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
-      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:300, damage:28, recoilForce:520, torqueKick:3.967, spinBase:1, mass:0.8, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
-      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:300, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
-      vampire: { name:'VAMPIRE', grade:0, hp:260, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
-      tesla: { name:'TESLA', grade:0, muzzle:34, hp:300, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
-      cryo: { name:'CRYO', grade:1, muzzle:32, hp:270, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
-      hammer: { name:'HAMMER', grade:2, hp:200, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
-      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:210, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
-      railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:300, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
-      ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:270, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
-      harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:240, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
-      rifle: { name:'RIFLE', grade:3, muzzle:40, hp:210, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
-      taser: { name:'TASER', grade:3, muzzle:30, hp:210, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
-      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:300, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
+      revolver: { name:'REVOLVER', grade:3, muzzle:26, hp:310, damage:30, recoilForce:520, torqueKick:5.29, spinBase:0.75, mass:1.0, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:850, spread:0, pellets:1, color:'#f59e0b', spec:'REVOLVER (RELIABLE SIX-SHOOTER)' },
+      shotgun: { name:'SHOTGUN', grade:3, falloff:true, muzzle:36, hp:310, damage:16, recoilForce:820, torqueKick:7.935, spinBase:0.85, mass:1.4, cooldown:0.65, maxAmmo:4, reloadTime:1.8, bulletSpeed:750, spread:0.22, pellets:4, color:'#ef4444', spec:'SHOTGUN (CLOSE RANGE: PELLETS WEAKEN FAR AWAY)' },
+      smg: { name:'SMG', grade:3, muzzle:28, hp:310, damage:25, recoilForce:300, torqueKick:3.306, spinBase:1, mass:0.8, cooldown:0.15, maxAmmo:12, reloadTime:1.2, bulletSpeed:820, spread:0.08, pellets:1, color:'#10b981', spec:'SMG (RAPID FIRE)' },
+      sniper: { name:'SNIPER', steady:true, minSpin:0.6, grade:1, longshot:true, muzzle:48, hp:370, damage:109, recoilForce:500, torqueKick:3.306, spinBase:0.6, mass:1.7, cooldown:0.85, maxAmmo:3, reloadTime:2.0, bulletSpeed:1300, spread:0, pellets:1, color:'#3b82f6', spec:'SNIPER (LONG RANGE: DAMAGE GROWS WITH DISTANCE)' },
+      plasma: { name:'PLASMA', grade:1, burn:1.5, muzzle:30, hp:370, damage:28, recoilForce:650, torqueKick:5.951, spinBase:0.8, mass:1.1, cooldown:0.45, maxAmmo:5, reloadTime:1.5, bulletSpeed:650, spread:0, pellets:1, color:'#a855f7', spec:'PLASMA (ENERGY: BURNS EVEN THROUGH A SHIELD)' },
+      sword: { name:'SWORD', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.6, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:13, hitTo:68, hitW:5, bladeLen:58, hp:300, lungeForce:650, color:'#e2e8f0', spec:'SWORD (BLADE HITS, NO SHOTS)' },
+      shield: { name:'SHIELD', grade:1, muzzle:28, damage:16, recoilForce:450, torqueKick:3.967, spinBase:1, mass:0.9, cooldown:0.35, maxAmmo:6, reloadTime:1.4, bulletSpeed:1000, spread:0, pellets:1, hp:450, shield:true, color:'#38bdf8', spec:'SHIELD (BLOCKS SHOTS AND BLADES FROM THE FRONT)' },
+      rocket: { name:'ROCKET', grade:1, splash:80, knock:0.4, muzzle:46, hp:370, damage:101, recoilForce:900, torqueKick:7.935, spinBase:0.6, mass:1.5, cooldown:1.0, maxAmmo:2, reloadTime:2.2, bulletSpeed:520, spread:0, pellets:1, bulletRadius:8, color:'#fb923c', spec:'ROCKET (EXPLODES: HURTS NEARBY ENEMIES, BIG KNOCKBACK)' },
+      axe: { name:'AXE', grade:2, damage:18, recoilForce:0, torqueKick:3.967, spinBase:1, mass:1.2, cooldown:0.8, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:30, hitTo:52, hitW:18, style:'axe', bladeLen:44, hp:300, bladeWidth:14, lungeForce:520, color:'#cbd5e1', spec:'AXE (WIDE SWING, HEAVY HIT)' },
+      crossbow: { name:'CROSSBOW', grade:2, ignoreShield:true, muzzle:38, hp:340, damage:47, recoilForce:350, torqueKick:3.967, spinBase:0.7, mass:1.2, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:1100, spread:0, pellets:1, color:'#a3e635', spec:'CROSSBOW (ARMOR-PIERCING BOLT, IGNORES SHIELDS)' },
+      spear: { name:'SPEAR', grade:2, damage:19, recoilForce:0, torqueKick:3.967, spinBase:0.9, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:76, hitTo:98, hitW:6, style:'spear', hp:300, bladeLen:84, bladeWidth:3, lungeForce:700, color:'#e2e8f0', spec:'SPEAR (LONG REACH, LIGHT HIT)' },
+      boomerang: { name:'BOOMERANG', grade:0, muzzle:30, hp:400, damage:28, recoilForce:520, torqueKick:3.967, spinBase:1, mass:0.8, cooldown:0.8, maxAmmo:3, reloadTime:1.6, bulletSpeed:650, spread:0, pellets:1, bulletRadius:9, turn:230, color:'#facc15', spec:'BOOMERANG (FLIES OUT, THEN COMES BACK: CAN HIT TWICE)' },
+      flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:400, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
+      vampire: { name:'VAMPIRE', grade:0, hp:360, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
+      tesla: { name:'TESLA', grade:0, muzzle:34, hp:400, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
+      cryo: { name:'CRYO', grade:1, muzzle:32, hp:370, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
+      hammer: { name:'HAMMER', grade:2, hp:300, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
+      slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:310, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
+      railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:400, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
+      ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:370, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
+      harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:340, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
+      rifle: { name:'RIFLE', grade:3, muzzle:40, hp:310, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
+      taser: { name:'TASER', grade:3, muzzle:30, hp:310, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
+      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:400, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
 
@@ -828,8 +828,8 @@
         if (!this.alive) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.strokeStyle = hexA(this.acc(), 0.7);
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = hexA(this.acc(), 1);   // aim line: full strength colour
+        ctx.lineWidth = 2.6;
         ctx.setLineDash([3, 3]);
         ctx.beginPath(); ctx.moveTo(0, 0);
         ctx.lineTo(Math.cos(this.angle) * 140, Math.sin(this.angle) * 140);
@@ -1041,14 +1041,14 @@
     // Knockout cinematic: slow-mo, zoom on the loser, flash, "K.O." text, burst
     const SKINS = [
       { id: 'classic', name: 'CLASSIC', color: null, cost: 0 },
-      { id: 'crimson', name: 'CRIMSON', color: '#ef4444', cost: 60 },
-      { id: 'ocean', name: 'OCEAN', color: '#38bdf8', cost: 60 },
-      { id: 'forest', name: 'FOREST', color: '#22c55e', cost: 60 },
-      { id: 'violet', name: 'VIOLET', color: '#a78bfa', cost: 120 },
-      { id: 'sunset', name: 'SUNSET', color: '#fb923c', cost: 120 },
-      { id: 'pink', name: 'NEON PINK', color: '#f472b6', cost: 200 },
-      { id: 'gold', name: 'GOLD', color: '#facc15', cost: 300 },
-      { id: 'ice', name: 'ICE WHITE', color: '#e0f2fe', cost: 400 }
+      { id: 'crimson', name: 'CRIMSON', color: '#ef4444', cost: 300 },
+      { id: 'ocean', name: 'OCEAN', color: '#38bdf8', cost: 300 },
+      { id: 'forest', name: 'FOREST', color: '#22c55e', cost: 300 },
+      { id: 'violet', name: 'VIOLET', color: '#a78bfa', cost: 600 },
+      { id: 'sunset', name: 'SUNSET', color: '#fb923c', cost: 600 },
+      { id: 'pink', name: 'NEON PINK', color: '#f472b6', cost: 1000 },
+      { id: 'gold', name: 'GOLD', color: '#facc15', cost: 1500 },
+      { id: 'ice', name: 'ICE WHITE', color: '#e0f2fe', cost: 2000 }
     ];
     let ownedWeapons = ['revolver'];
     let coins = 0, ownedSkins = ['classic'], skinId = 'classic', playerSkinIds = ['classic', null, null, null], slotSkins = [null, null, null, null], netGuestSkin = null, rewarded = false;
