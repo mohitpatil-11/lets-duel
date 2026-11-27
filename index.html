@@ -828,7 +828,7 @@
         if (!this.alive) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.strokeStyle = hexA(this.acc(), 1);   // aim line: full strength colour
+        ctx.strokeStyle = hexA(this.acc(), 0.25);   // aim line: a quarter of full strength
         ctx.lineWidth = 2.6;
         ctx.setLineDash([3, 3]);
         ctx.beginPath(); ctx.moveTo(0, 0);
@@ -1058,15 +1058,15 @@
     function accOf(i) { const g = gunByIndex(i); return g ? g.acc() : (GUN_COLORS[i] || '#f59e0b'); }
     function updateCoinUI() { const b = document.getElementById('shop-btn'); if (b) b.innerText = '🛒 SHOP  ·  🪙 ' + coins; }
     let shopTab = 'weapons';
-    const WEAPON_PRICES = { 3: 100, 2: 1000, 1: 5000, 0: 25000 };   // Grade 3 = 100, Grade 2 = 1,000, Grade 1 = 5,000, Special = 25,000
-    const weaponPrice = (k) => WEAPON_PRICES[WEAPONS[k].grade] || 100;
+    const WEAPON_PRICES = { 3: 500, 2: 1000, 1: 5000, 0: 25000 };   // Grade 3 = 500, Grade 2 = 1,000, Grade 1 = 5,000, Special = 25,000
+    const weaponPrice = (k) => WEAPON_PRICES[WEAPONS[k].grade] || 500;
     function openShop(tab) {
       if (tab) shopTab = tab;
       document.getElementById('info-title').innerText = 'SHOP  🪙 ' + coins.toLocaleString();
       const tabs = `<div style="display:flex;gap:8px;margin-bottom:6px"><button class="shopb${shopTab === 'weapons' ? ' eq' : ''}" style="flex:1" onclick="openShop('weapons')">WEAPONS</button><button class="shopb${shopTab === 'skins' ? ' eq' : ''}" style="flex:1" onclick="openShop('skins')">SKINS</button></div>`;
       let body;
       if (shopTab === 'weapons') {
-        body = `<p>Unlock weapons with coins. Prices: Grade 3 costs 100, Grade 2 costs 1,000, Grade 1 costs 5,000 and Special grade costs 25,000. You start with the Revolver.</p>` + [3, 2, 1, 0].map(g => {
+        body = `<p>Unlock weapons with coins. Prices: Grade 3 costs 500, Grade 2 costs 1,000, Grade 1 costs 5,000 and Special grade costs 25,000. You start with the Revolver.</p>` + [3, 2, 1, 0].map(g => {
           const G = GRADES.find(x => x.g === g), keys = Object.keys(WEAPONS).filter(k => WEAPONS[k].grade === g);
           const rows = keys.map(k => {
             const owned = ownedWeapons.includes(k), eq = selectedWeaponType === k, price = weaponPrice(k), can = owned || coins >= price;
