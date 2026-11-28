@@ -395,6 +395,34 @@
         dot(30, 0, 4, '#020617');                                          // the hole
         box(-6, -3, 6, 2, c);
       },
+      musket(c) {
+        poly([[-10, -4], [-30, -1], [-30, 9], [-12, 6]], '#92400e');       // wooden stock
+        box(-10, -4, 18, 9, '#5b4636');                                    // lock
+        box(8, -2.5, 42, 5, '#6b7280'); box(48, -3.5, 3, 7, '#9ca3af');    // long barrel
+        poly([[-6, -4], [-3, -11], [1, -4]], '#374151');                   // flint hammer
+        box(-4, -3, 6, 2, c);
+      },
+      blowgun(c) {
+        box(-14, -2, 50, 4, '#065f46'); box(-18, -3.5, 4, 7, '#fcd34d');   // tube and mouthpiece
+        box(8, -3, 3, 6, '#a7f3d0'); box(22, -3, 3, 6, '#a7f3d0');         // bands
+        poly([[36, -3], [45, 0], [36, 3]], '#86efac');                     // dart
+        box(-8, -1, 6, 2, c);
+      },
+      akimbo(c) {
+        [-8, 8].forEach(y => {                                             // two pistols side by side
+          box(-10, y - 3, 22, 6, '#4b5563'); box(12, y - 2, 14, 4, '#9ca3af');
+          poly([[-6, y + 3], [0, y + 3], [-3, y + 11], [-9, y + 10]], '#92400e');
+          box(-8, y - 2, 4, 2, c);
+        });
+      },
+      venom(c) {
+        poly([[-8, 4], [-1, 4], [-4, 15], [-12, 13]], '#14532d');          // grip
+        box(-12, -6, 24, 12, '#166534'); box(12, -4, 18, 8, '#22c55e');    // body and barrel
+        poly([[30, -5], [41, 0], [30, 5]], '#4ade80');                     // fang tip
+        dot(7, 0, 3.5, '#bbf7d0');                                         // venom vial
+        ctx.globalAlpha = 0.6; dot(36, 7, 1.6, '#4ade80'); ctx.globalAlpha = 1;   // drip
+        box(-6, -3, 6, 2, c);
+      },
       crossbow(c) {
         poly([[-14, -3], [18, -2], [18, 2], [-14, 4], [-18, 1]], '#92400e'); // wooden stock
         ctx.lineCap = 'round';
@@ -482,15 +510,21 @@
       flamethrower: { name:'FLAMETHROWER', grade:0, muzzle:38, hp:400, damage:10, recoilForce:260, torqueKick:2.645, spinBase:1.3, mass:1.0, cooldown:0.15, maxAmmo:20, reloadTime:2.2, bulletSpeed:520, spread:0.28, pellets:1, bulletRadius:6, range:190, burn:2, color:'#fb923c', spec:'FLAMETHROWER (SHORT-RANGE FIRE, SETS ENEMIES BURNING)' },
       vampire: { name:'VAMPIRE', grade:0, hp:360, damage:8, recoilForce:0, torqueKick:3.967, spinBase:1.2, mass:1.0, cooldown:0.55, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:10, hitTo:70, hitW:6, style:'vampire', bladeLen:62, bladeWidth:5, lungeForce:640, lifesteal:0.6, color:'#dc2626', spec:'VAMPIRE BLADE (HEALS YOU WHEN IT CUTS)' },
       tesla: { name:'TESLA', grade:0, muzzle:34, hp:400, chain:170, damage:31, recoilForce:350, torqueKick:3.967, spinBase:1.0, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.6, bulletSpeed:1000, spread:0.02, pellets:1, bulletRadius:5, color:'#67e8f9', spec:'TESLA (LIGHTNING JUMPS TO A SECOND ENEMY)' },
-      cryo: { name:'CRYO', grade:1, muzzle:32, hp:370, slow:5, damage:38, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
+      cryo: { name:'CRYO', grade:3, muzzle:32, hp:310, slow:5, damage:35, recoilForce:400, torqueKick:3.967, spinBase:0.9, mass:1.1, cooldown:0.5, maxAmmo:5, reloadTime:1.6, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#a5f3fc', spec:'CRYO (FREEZE RAY: SLOWS THE ENEMY)' },
       hammer: { name:'HAMMER', grade:2, hp:300, damage:15, recoilForce:0, torqueKick:3.967, spinBase:1.0, mass:1.2, cooldown:0.9, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, hitFrom:32, hitTo:48, hitW:13, style:'hammer', bladeLen:40, bladeWidth:16, lungeForce:500, knockBlade:900, color:'#94a3b8', spec:'HAMMER (HEAVY SMASH: SENDS ENEMIES FLYING)' },
       slingshot: { name:'SLINGSHOT', grade:3, muzzle:26, hp:310, damage:31, recoilForce:150, torqueKick:2.645, spinBase:0.9, mass:0.9, cooldown:0.4, maxAmmo:25, reloadTime:1.2, bulletSpeed:700, spread:0.05, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'SLINGSHOT (SIMPLE STONE SHOTS)' },
       railgun: { name:'RAILGUN', grade:0, muzzle:46, hp:400, pierce:true, ignoreShield:true, damage:118, recoilForce:700, torqueKick:3.45, spinBase:0.9, mass:1.3, cooldown:1.0, maxAmmo:2, reloadTime:2, bulletSpeed:1600, spread:0, pellets:1, bulletRadius:5, color:'#c4b5fd', spec:'RAILGUN (PIERCES THROUGH EVERYONE, IGNORES SHIELDS)' },
       ricochet: { name:'RICOCHET', grade:1, muzzle:40, hp:370, bounce:3, damage:19, recoilForce:350, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.45, maxAmmo:6, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#fde047', spec:'RICOCHET (SHOTS BOUNCE OFF THE WALLS)' },
       harpoon: { name:'HARPOON', grade:2, muzzle:46, hp:340, knock:-0.5, damage:80, recoilForce:450, torqueKick:3.45, spinBase:0.9, mass:1.2, cooldown:0.75, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:6, color:'#5eead4', spec:'HARPOON (A HIT DRAGS THE ENEMY TO YOU)' },
       rifle: { name:'RIFLE', grade:3, muzzle:40, hp:310, damage:52, recoilForce:380, torqueKick:2.9, spinBase:0.85, mass:1.2, cooldown:0.5, maxAmmo:10, reloadTime:1.5, bulletSpeed:1000, spread:0.01, pellets:1, color:'#d6d3d1', spec:'RIFLE (ACCURATE LONG-RANGE SHOTS)' },
-      taser: { name:'TASER', grade:3, muzzle:30, hp:310, stun:2, range:300, damage:43, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
-      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:400, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' }
+      taser: { name:'TASER', grade:1, muzzle:30, hp:370, stun:2, range:300, damage:29, recoilForce:420, torqueKick:2.3, spinBase:0.9, mass:0.8, cooldown:0.5, maxAmmo:6, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#facc15', spec:'TASER (POLICE STUN GUN: WIRES STUN THE ENEMY, NO SHOOTING FOR A MOMENT)' },
+      blackhole: { name:'BLACKHOLE', grade:0, muzzle:36, hp:400, well:true, damage:52, recoilForce:300, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.9, maxAmmo:4, reloadTime:1.8, bulletSpeed:800, spread:0, pellets:1, bulletRadius:7, color:'#a78bfa', spec:'BLACKHOLE (A HIT OPENS A GRAVITY WELL THAT PULLS ENEMIES IN)' },
+      musket: { name:'MUSKET', grade:3, muzzle:50, hp:310, damage:100, recoilForce:700, torqueKick:3.45, spinBase:0.8, mass:1.4, cooldown:0.7, maxAmmo:2, reloadTime:1.4, bulletSpeed:900, spread:0.02, pellets:1, bulletRadius:5, color:'#d6d3d1', spec:'MUSKET (HEAVY SHOTS, SLOW TO RELOAD)' },
+      blowgun: { name:'BLOWGUN', grade:3, muzzle:44, hp:310, damage:15, recoilForce:80, torqueKick:1.7, spinBase:0.9, mass:0.8, cooldown:0.18, maxAmmo:16, reloadTime:1.3, bulletSpeed:1100, spread:0.04, pellets:1, bulletRadius:3, color:'#86efac', spec:'BLOWGUN (QUICK, LIGHT DARTS)' },
+      dagger: { name:'DAGGER', grade:3, hp:270, damage:18, recoilForce:0, torqueKick:2.3, spinBase:1.2, mass:0.9, cooldown:0.3, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'dagger', bladeLen:36, hitFrom:13, hitTo:46, hitW:5, bladeWidth:5, lungeForce:520, color:'#e2e8f0', spec:'DAGGER (SHORT BLADE, VERY FAST STABS)' },
+      katana: { name:'KATANA', grade:2, hp:300, damage:18, recoilForce:0, torqueKick:3.45, spinBase:1.3, mass:1.0, cooldown:0.4, maxAmmo:1, reloadTime:1, bulletSpeed:0, spread:0, pellets:0, melee:true, style:'katana', bladeLen:70, hitFrom:14, hitTo:80, hitW:5, bladeWidth:5, lungeForce:700, color:'#e2e8f0', spec:'KATANA (LONG, FAST CURVED BLADE)' },
+      akimbo: { name:'AKIMBO', grade:2, muzzle:34, hp:340, damage:17, recoilForce:420, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.38, maxAmmo:8, reloadTime:1.5, bulletSpeed:900, spread:0.14, pellets:2, color:'#fcd34d', spec:'AKIMBO (TWO PISTOLS: TWO SHOTS AT ONCE)' },
+      venom: { name:'VENOM', grade:1, muzzle:38, hp:370, damage:21, burn:4, dotColor:'#4ade80', recoilForce:320, torqueKick:3.45, spinBase:0.9, mass:1.0, cooldown:0.5, maxAmmo:5, reloadTime:1.5, bulletSpeed:850, spread:0.02, pellets:1, bulletRadius:5, color:'#4ade80', spec:'VENOM (POISON: DAMAGE OVER TIME FOR 4 SECONDS)' }
     };
     const WEAPON_KEYS = Object.keys(WEAPONS);
 
@@ -838,7 +872,14 @@
 
         ctx.rotate(this.angle);
         ctx.scale(this.scale, this.scale);
-        if (this.config.melee && this.config.style === 'hammer') { // war hammer: long handle + heavy square head
+        if (this.config.melee && this.config.style === 'katana') { // katana: wrapped handle, round guard, long curved blade
+          const BL = this.config.bladeLen;
+          ctx.fillStyle = '#7f1d1d'; ctx.fillRect(-14, -2.5, 18, 5);
+          ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(5, 0, 5, 0, 7); ctx.fill();
+          ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(7, -2); ctx.quadraticCurveTo(BL * 0.55, -9, BL + 10, -1); ctx.lineTo(BL + 10, 0.5); ctx.quadraticCurveTo(BL * 0.55, 2.5, 7, 2.5); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(7, 0); ctx.quadraticCurveTo(BL * 0.55, -3, BL + 10, -0.2); ctx.stroke();
+          ctx.fillStyle = this.acc(); ctx.fillRect(-10, -1.5, 4, 3);
+        } else if (this.config.melee && this.config.style === 'hammer') { // war hammer: long handle + heavy square head
           const BL = this.config.bladeLen;
           ctx.fillStyle = '#92400e'; ctx.fillRect(-14, -2.5, BL + 4, 5);
           ctx.fillStyle = this.acc(); ctx.fillRect(-8, -3, 14, 6);
@@ -1586,7 +1627,7 @@
                 createSparks(b.x, b.y, '#bae6fd');
                 combatTexts.push(new FloatingText(target.x, target.y - 14, 'BLOCKED', '#7dd3fc'));
                 if (target.alive) {
-                  if (c.burn) { target.burnT = c.burn; target.burnOwner = owner; }
+                  if (c.burn) { target.burnT = c.burn; target.burnOwner = owner; target.burnColor = c.dotColor || '#fb923c'; }
                   if (c.slow) target.slowT = c.slow;
                   if (c.stun) { target.stunT = c.stun; target.tazeSrc = gunByIndex(owner); }
                 }
@@ -1597,7 +1638,7 @@
             if (c.turn || c.pierce) b.hitSet.add(target.index); else b.active = false;
             const kb = c.knock || 0.2;
             dealDamage(target, owner, bulletDamage(b), b.x, b.y, b.vx * kb, b.vy * kb, c.color);
-            if (c.burn && target.alive) { target.burnT = c.burn; target.burnOwner = owner; }
+            if (c.burn && target.alive) { target.burnT = c.burn; target.burnOwner = owner; target.burnColor = c.dotColor || '#fb923c'; }
             if (c.slow && target.alive) { target.slowT = c.slow; combatTexts.push(new FloatingText(target.x, target.y - 18, 'FROZEN', '#a5f3fc')); }
             if (c.stun && target.alive) { target.stunT = c.stun; target.tazeSrc = gunByIndex(owner); createSparks(target.x, target.y, '#facc15'); combatTexts.push(new FloatingText(target.x, target.y - 18, 'STUNNED', '#facc15')); }
             if (c.well) wells.push({ x: b.x, y: b.y, t: 2, owner });
@@ -1659,8 +1700,8 @@
         all.forEach(t => {
           if (!t.alive || !(t.burnT > 0)) return;
           t.burnT -= dt; t.burnAcc += 8 * dt;
-          if (Math.random() < 0.3) particles.push(new Particle(t.x + (Math.random() - 0.5) * 16, t.y - 6, 0, -50, '#fb923c', 0.3));
-          if (t.burnAcc >= 4) { t.burnAcc -= 4; dealDamage(t, t.burnOwner, 4, t.x, t.y, 0, 0, '#fb923c'); }
+          if (Math.random() < 0.3) particles.push(new Particle(t.x + (Math.random() - 0.5) * 16, t.y - 6, 0, -50, t.burnColor || '#fb923c', 0.3));
+          if (t.burnAcc >= 4) { t.burnAcc -= 4; dealDamage(t, t.burnOwner, 4, t.x, t.y, 0, 0, t.burnColor || '#fb923c'); }
         });
         // Sword blades hurt whoever they touch (each target at most every 0.5s)
         all.forEach(a => {

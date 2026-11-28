@@ -6,9 +6,9 @@ A fast physics duel game for the browser and phone (PWA). Your weapon spins on i
 
 ## Features
 - 1 player vs bots, 2 players on one device, free-for-all with 3 or 4 weapons, and online play (4-letter room code or invite link)
-- 25 weapons in four grades (**Special > Grade 1 > Grade 2 > Grade 3**) with their own abilities
+- 30 weapons in four grades (**Special > Grade 1 > Grade 2 > Grade 3**) with their own abilities
 - 3 maps with different gravity: Arena, Moon, Jupiter
-- Profile name, match results with kills, coins, and cosmetic skins (they never change strength)
+- Profile name, match results with kills, coins to unlock weapons, and cosmetic skins (skins never change strength)
 - Works offline after the first load (except online play), installable on Android and iPhone
 
 ## Settings for a public launch (`config.js`, see `config.example.js`)
